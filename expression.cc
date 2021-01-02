@@ -7,6 +7,7 @@
 #include <list> 
 #include <string>
 #include <exception>
+#include <iostream>
 
 namespace nd_sm {
 	
@@ -23,6 +24,7 @@ namespace nd_sm {
 	std::list<lexem> define_standart_brackets();
 	std::list<lexem> define_standart_functions();
 	inline bool is_exist(const char* ptr);
+	inline bool is_minus(const char* ptr);
 	inline bool is_digit(const char* ptr);
 	inline double extract_number_and_shift_ptr(const char*& ptr);
 	inline bool is_bracket(std::list<lexem> standart_brackets,
@@ -38,12 +40,14 @@ namespace nd_sm {
 
 	inline std::list<lexem> extract_expression(const char* it) {
 		static std::list<lexem> standart_brackets = define_standart_brackets();
-		static std::list<lexem> standart_functions = define_standart_functions();
 		
+		static std::list<lexem> standart_functions = define_standart_functions();
 		std::list<lexem> expression;
 
 		while (is_exist(it)) {
-			if (is_digit(it)) {
+			if (is_digit(it) or is_minus(it) and
+				(expression.empty() or expression.back().type() != lexem_type::number)) {
+				
 				expression.push_back(lexem(extract_number_and_shift_ptr(it)));
 			}
 			else if (is_bracket(standart_brackets, it)) {
@@ -93,6 +97,10 @@ namespace nd_sm {
 		return ptr and *ptr;
 	}
 
+	inline bool is_minus(const char* ptr) {
+		return *ptr == '-';
+	}
+
 	inline bool is_digit(const char* ptr) {
 		unsigned char value = *ptr - '0';
 		return value >= 0 and value <= 9;
@@ -102,15 +110,28 @@ namespace nd_sm {
 
 	inline double extract_number_and_shift_ptr(const char*& ptr) {
 		std::string number = "";
-		for (ptr; is_digit(ptr) or is_dot(ptr); ptr++) {
-			static bool dot_counter = 0;
+		for (ptr; is_digit(ptr) or is_dot(ptr) or is_minus(ptr); ptr++) {
+			bool dot_counter = 0;
 			if (is_dot(ptr)) {
 				if (dot_counter) {
 					throw std::exception("Float value must have only one '.' in definition!");
 				}
 				dot_counter++;
 			}
-			number += *ptr;
+			bool minus_counter = 0;
+			if (is_minus(ptr)) {
+				if (minus_counter) {
+					minus_counter = 0;
+				}
+				minus_counter++;
+			}
+			else {
+				if (minus_counter) {
+					number += '-';
+					minus_counter = 0;
+				}
+				number += *ptr;
+			}
 		}
 		return std::stod(number);
 	}
@@ -267,11 +288,20 @@ namespace nd_sm {
 			os << *it << ' ';
 		}
 		os << std::endl;
-		for (it = e.reverse_polish_notation_.begin(); it != e.reverse_polish_notation_.end(); it++) {
-			os << *it << ' ';
-		}
-		os << std::endl << e.result_;
 		return os;
 	}
 
+	void expression::test() {
+		std::cout << "source expression:\n>>> ";
+		static std::list<lexem>::const_iterator it;
+		for (it = expression_.begin(); it != expression_.end(); it++) {
+			std::cout << *it << ' ';
+		}
+		std::cout << std::endl << "rpn:\n>>> ";
+		for (it = reverse_polish_notation_.begin(); it != reverse_polish_notation_.end(); it++) {
+			std::cout << *it << ' ';
+		}
+		std::cout << std::endl
+			<< "result:\n>>> " << result_ << std::endl;
+	}
 }

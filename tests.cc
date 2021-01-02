@@ -5,13 +5,12 @@
 
 int main() {
 	try {
-		nd_sm::expression test = "127*(3+4)";
-		std::cout << test;
+		nd_sm::expression e = "--127 * ( -3 + 4 )";
+		e.test();
 	}
 	catch (std::exception e) {
 		std::cout << e.what();
 		return EXIT_FAILURE;
 	}
-
 	return EXIT_SUCCESS;
 }

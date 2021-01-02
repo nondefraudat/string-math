@@ -17,6 +17,8 @@ namespace nd_sm {
 		expression(const char* definition);
 
 		friend std::ostream& operator<<(std::ostream& os, const expression&);
+
+		void test();
 	};
 }
 
