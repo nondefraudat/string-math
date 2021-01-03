@@ -9,6 +9,7 @@
 
 namespace nd_sm {
 	class expression {
+		const char* definition_;
 		std::list<lexem> expression_;
 		std::list<lexem> reverse_polish_notation_;
 		double result_;
@@ -18,7 +19,8 @@ namespace nd_sm {
 
 		friend std::ostream& operator<<(std::ostream& os, const expression&);
 
-		void test();
+		const char* definiton();
+		double result();
 	};
 }
 

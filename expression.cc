@@ -16,9 +16,18 @@ namespace nd_sm {
 	inline double extract_result(std::list<lexem> rpn);
 
 	expression::expression(const char* definition) {
+		definition_ = definition;
 		expression_ = extract_expression(definition);
 		reverse_polish_notation_ = generate_rpn(expression_);
 		result_ = extract_result(reverse_polish_notation_);
+	}
+
+	const char* expression::definiton() {
+		return definition_;
+	}
+
+	double expression::result() {
+		return result_;
 	}
 
 	std::list<lexem> define_standart_brackets();
@@ -289,19 +298,5 @@ namespace nd_sm {
 		}
 		os << std::endl;
 		return os;
-	}
-
-	void expression::test() {
-		std::cout << "source expression:\n>>> ";
-		static std::list<lexem>::const_iterator it;
-		for (it = expression_.begin(); it != expression_.end(); it++) {
-			std::cout << *it << ' ';
-		}
-		std::cout << std::endl << "rpn:\n>>> ";
-		for (it = reverse_polish_notation_.begin(); it != reverse_polish_notation_.end(); it++) {
-			std::cout << *it << ' ';
-		}
-		std::cout << std::endl
-			<< "result:\n>>> " << result_ << std::endl;
 	}
 }
