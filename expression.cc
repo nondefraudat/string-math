@@ -2,7 +2,7 @@
 
 #include "lexem.h"
 #include "operation.h"
-#include "math_bracket.h"
+#include "bracket.h"
 
 #include <list> 
 #include <string>
@@ -13,7 +13,7 @@ namespace nd_sm {
 	
 	inline std::list<lexem> extract_expression(const char* it);
 	inline std::list<lexem> generate_rpn(std::list<lexem> expression);
-	inline double extract_result(std::list<lexem> rpn);
+	inline std::list<lexem> extract_result(std::list<lexem> rpn);
 
 	expression::expression(std::list<lexem> expression) {
 		expression_ = expression_;
@@ -27,11 +27,7 @@ namespace nd_sm {
 		result_ = extract_result(reverse_polish_notation_);
 	}
 
-	const char* expression::definiton() {
-		return definition_;
-	}
-
-	double expression::result() {
+	expression expression::result() {
 		return result_;
 	}
 
@@ -43,11 +39,11 @@ namespace nd_sm {
 	inline double extract_number_and_shift_ptr(const char*& ptr);
 	inline bool is_bracket(std::list<lexem> standart_brackets,
 		const char* ptr);
-	inline math_bracket extract_bracket_and_shift_ptr(std::list<lexem> standart_brackets,
+	inline bracket_t extract_bracket_and_shift_ptr(std::list<lexem> standart_brackets,
 		const char*& ptr);
-	inline bool is_function(std::list<lexem> standart_functions, 
+	inline bool is_operation(std::list<lexem> standart_functions, 
 		const char* ptr);
-	inline math_function extract_function_and_shift_ptr(std::list<lexem> standart_functions,
+	inline operation_t extract_operation_and_shift_ptr(std::list<lexem> standart_functions,
 		const char*& ptr);
 	inline bool is_space(const char* ptr);
 	inline void shift_ptr(const char*& ptr);
@@ -67,8 +63,8 @@ namespace nd_sm {
 			else if (is_bracket(standart_brackets, it)) {
 				expression.push_back(lexem(extract_bracket_and_shift_ptr(standart_brackets, it)));
 			}
-			else if (is_function(standart_functions, it)) {
-				expression.push_back(lexem(extract_function_and_shift_ptr(standart_functions, it)));
+			else if (is_operation(standart_functions, it)) {
+				expression.push_back(lexem(extract_operation_and_shift_ptr(standart_functions, it)));
 			}
 			else if (is_space(it)) {
 				shift_ptr(it);
@@ -85,9 +81,9 @@ namespace nd_sm {
 		std::list<lexem> standart_brackets;
 
 		standart_brackets.push_back(
-			lexem(math_bracket("(", bracket_type::left)));
+			lexem(bracket_t("(", bracket_orientation::left)));
 		standart_brackets.push_back(
-			lexem(math_bracket(")", bracket_type::right)));
+			lexem(bracket_t(")", bracket_orientation::right)));
 
 		return standart_brackets;
 	}
@@ -96,13 +92,13 @@ namespace nd_sm {
 		std::list<lexem> standart_functions;
 
 		standart_functions.push_back(
-			lexem(math_function("+", 2, [](double args[]) -> double { return args[0] + args[1]; }, 1)));
+			lexem(operation_t("+", 2, [](double args[]) -> double { return args[0] + args[1]; }, 1)));
 		standart_functions.push_back(
-			lexem(math_function("-", 2, [](double args[]) -> double { return args[0] - args[1]; }, 1)));
+			lexem(operation_t("-", 2, [](double args[]) -> double { return args[0] - args[1]; }, 1)));
 		standart_functions.push_back(
-			lexem(math_function("*", 2, [](double args[]) -> double { return args[0] * args[1]; }, 2)));
+			lexem(operation_t("*", 2, [](double args[]) -> double { return args[0] * args[1]; }, 2)));
 		standart_functions.push_back(
-			lexem(math_function("/", 2, [](double args[]) -> double { return args[0] / args[1]; }, 2)));
+			lexem(operation_t("/", 2, [](double args[]) -> double { return args[0] / args[1]; }, 2)));
 
 		return standart_functions;
 	}
@@ -165,7 +161,7 @@ namespace nd_sm {
 
 	}
 
-	inline math_bracket extract_bracket_and_shift_ptr(std::list<lexem> standart_brackets,
+	inline bracket_t extract_bracket_and_shift_ptr(std::list<lexem> standart_brackets,
 		const char*& ptr) {
 
 		static std::list<lexem>::iterator it;
@@ -188,26 +184,26 @@ namespace nd_sm {
 		return true;
 	}
 
-	inline bool is_function(std::list<lexem> standart_functions,
+	inline bool is_operation(std::list<lexem> standart_functions,
 		const char* ptr) {
 
 		static std::list<lexem>::iterator it;
 		for (it = standart_functions.begin(); it != standart_functions.end(); it++) {
-			if (is_values_match(it->function().definition(), ptr)) {
+			if (is_values_match(it->operation().definition(), ptr)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	inline math_function extract_function_and_shift_ptr(std::list<lexem> standart_functions,
+	inline operation_t extract_operation_and_shift_ptr(std::list<lexem> standart_functions,
 		const char*& ptr) {
 
 		static std::list<lexem>::iterator it;
 		for (it = standart_functions.begin(); it != standart_functions.end(); it++) {
-			if (is_values_match(it->function().definition(), ptr)) {
-				ptr += std::strlen(it->function().definition());
-				return it->function();
+			if (is_values_match(it->operation().definition(), ptr)) {
+				ptr += std::strlen(it->operation().definition());
+				return it->operation();
 			}
 		}
 		throw std::exception("No matches");
@@ -237,7 +233,7 @@ namespace nd_sm {
 				rpn.push_back(*it);
 				break;
 			case lexem_type::bracket:
-				if (it->bracket().type() == bracket_type::right) {
+				if (it->bracket().orientation() == bracket_orientation::right) {
 					while (stack.front().type() != it->type()) {
 						rpn.push_back(stack.front());
 						stack.pop_front();
@@ -254,7 +250,7 @@ namespace nd_sm {
 				}
 				else {
 					while (!stack.empty() and stack.front().type() == lexem_type::function and
-						stack.front().function().priority() > it->function().priority()) {
+						stack.front().operation().priority() > it->operation().priority()) {
 						rpn.push_back(stack.front());
 						stack.pop_front();
 					}
@@ -270,30 +266,28 @@ namespace nd_sm {
 		return rpn;
 	}
 
-	inline double extract_result(std::list<lexem> rpn) {
-		std::list<double> stack;
+	inline std::list<lexem> extract_result(std::list<lexem> rpn) {
+		std::list<lexem> stack;
 		
 		static std::list<lexem>::iterator it;
 		for (it = rpn.begin(); it != rpn.end(); it++) {
 			switch (it->type()) {
 			case lexem_type::number:
-				stack.push_front(it->number());
+				stack.push_front(*it);
 				break;
 			case lexem_type::function:
-				size_t count = it->function().count_of_args();
+				size_t count = it->operation().count_of_args();
 				double* args = new double[count];
 				for (int i = count - 1; i >= 0; i--) {
-					args[i] = stack.front();
+					args[i] = stack.front().number();
 					stack.pop_front();
 				}
-				stack.push_front(it->function().execute(args));
+				stack.push_front(lexem(it->operation().execute(args)));
 				delete[] args;
 				break;
 			}
 		}
-		double result = stack.front();
-		stack.pop_front();
-		return result;
+		return stack;
 	}
 
 	std::ostream& operator<<(std::ostream& os, const expression& e) {

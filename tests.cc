@@ -6,7 +6,8 @@
 int main() {
 	try {
 		nd_sm::expression e = "--127 * ( -3 + 4 )";
-		e.test();
+		std::cout << e << std::endl
+			<< e.result() << std::endl;
 	}
 	catch (std::exception e) {
 		std::cout << e.what();
