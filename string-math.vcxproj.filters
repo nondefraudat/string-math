@@ -15,33 +15,33 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lexem.h">
-      <Filter>Файлы ресурсов</Filter>
-    </ClInclude>
-    <ClInclude Include="math_function.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="expression.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="math_bracket.h">
+    <ClInclude Include="lexem.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="operation.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="bracket.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="math_function.cc">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="lexem.cc">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="expression.cc">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="math_bracket.cc">
+    <ClCompile Include="tests.cc">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="tests.cc">
+    <ClCompile Include="operation.cc">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="bracket.cc">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

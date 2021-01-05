@@ -1,6 +1,7 @@
 #include "lexem.h"
 
-#include "math_function.h"
+#include "operation.h"
+#include "bracket.h"
 
 #include <exception>
 
@@ -9,11 +10,11 @@ namespace nd_sm {
 		number_ = number;
 	}
 
-	lexem::lexem(math_function function) noexcept : type_(lexem_type::function) {
-		function_ = function;
+	lexem::lexem(operation_t operation) noexcept : type_(lexem_type::function) {
+		operation_ = operation;
 	}
 
-	lexem::lexem(math_bracket bracket) noexcept : type_(lexem_type::bracket) {
+	lexem::lexem(bracket_t bracket) noexcept : type_(lexem_type::bracket) {
 		bracket_ = bracket;
 	}
 	
@@ -28,14 +29,14 @@ namespace nd_sm {
 		return number_;
 	}
 
-	math_function lexem::function() {
+	operation_t lexem::operation() {
 		if (type_ != lexem_type::function) {
 			throw std::exception("Lexem isn't a function!");
 		}
-		return function_;
+		return operation_;
 	}
 
-	math_bracket lexem::bracket() {
+	bracket_t lexem::bracket() {
 		if (type_ != lexem_type::bracket) {
 			throw std::exception("Lexem isn't a bracket"); 
 		}
@@ -48,7 +49,7 @@ namespace nd_sm {
 			os << l.number_;
 			break;
 		case lexem_type::function:
-			os << l.function_.definition();
+			os << l.operation_.definition();
 			break;
 		case lexem_type::bracket:
 			os << l.bracket_.definition();

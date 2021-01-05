@@ -5,14 +5,14 @@
 
 namespace nd_sm {
 
-	class math_function {
+	class operation_t {
 		const char* definition_;
 		size_t count_of_args_;
 		double(*action_)(double[]);
 		size_t priority_;
 
 	public:
-		explicit math_function(const char* definition, 
+		explicit operation_t(const char* definition,
 			size_t count_of_args, 
 			double(*action)(double[]),
 			size_t priority) noexcept;

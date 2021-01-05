@@ -1,8 +1,8 @@
-#include "math_function.h"
+#include "operation.h"
 
 
 namespace nd_sm {
-	math_function::math_function(const char* definition, 
+	operation_t::operation_t(const char* definition,
 		size_t count_of_args, 
 		double(*action)(double[]),
 		size_t priority) noexcept {
@@ -13,19 +13,19 @@ namespace nd_sm {
 		priority_ = priority;
 	}
 
-	const char* math_function::definition() const {
+	const char* operation_t::definition() const {
 		return definition_;
 	}
 
-	size_t math_function::count_of_args() const {
+	size_t operation_t::count_of_args() const {
 		return count_of_args_;
 	}
 
-	double math_function::execute(double args[]) noexcept {
+	double operation_t::execute(double args[]) noexcept {
 		return action_(args);
 	}
 	
-	size_t math_function::priority() const {
+	size_t operation_t::priority() const {
 		return priority_;
 	}
 }

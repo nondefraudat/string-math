@@ -1,7 +1,7 @@
 #include "expression.h"
 
 #include "lexem.h"
-#include "math_function.h"
+#include "operation.h"
 #include "math_bracket.h"
 
 #include <list> 
@@ -15,8 +15,13 @@ namespace nd_sm {
 	inline std::list<lexem> generate_rpn(std::list<lexem> expression);
 	inline double extract_result(std::list<lexem> rpn);
 
+	expression::expression(std::list<lexem> expression) {
+		expression_ = expression_;
+		reverse_polish_notation_ = generate_rpn(expression_);
+		result_ = extract_result(reverse_polish_notation_);
+	}
+
 	expression::expression(const char* definition) {
-		definition_ = definition;
 		expression_ = extract_expression(definition);
 		reverse_polish_notation_ = generate_rpn(expression_);
 		result_ = extract_result(reverse_polish_notation_);

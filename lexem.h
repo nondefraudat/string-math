@@ -1,8 +1,8 @@
 #ifndef NONDEFRAUDAT_STRING_MATH_LEXEM_H_
 #define NONDEFRAUDAT_STRING_MATH_LEXEM_H_
 
-#include "math_function.h"
-#include "math_bracket.h"
+#include "operation.h"
+#include "bracket.h"
 
 #include <exception>
 #include <ostream>
@@ -15,25 +15,26 @@ namespace nd_sm {
 		bracket
 	};
 
-	class math_function;
+	class operation_t;
+	class bracket_t;
 
 	class lexem {
 		lexem_type type_;
 		union {
 			double number_;
-			math_function function_;
-			math_bracket bracket_;
+			operation_t operation_;
+			bracket_t bracket_;
 		};
 
 	public:
 		explicit lexem(double number) noexcept;
-		explicit lexem(math_function function) noexcept;
-		explicit lexem(math_bracket bracket) noexcept;
+		explicit lexem(operation_t operation) noexcept;
+		explicit lexem(bracket_t bracket) noexcept;
 
 		lexem_type type() const;
 		double number();
-		math_function function();
-		math_bracket bracket();
+		operation_t operation();
+		bracket_t bracket();
 
 		friend std::ostream& operator<<(std::ostream& os, const lexem&);
 	};

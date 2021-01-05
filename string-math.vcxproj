@@ -19,16 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="math_bracket.h" />
+    <ClInclude Include="bracket.h" />
     <ClInclude Include="expression.h" />
     <ClInclude Include="lexem.h" />
-    <ClInclude Include="math_function.h" />
+    <ClInclude Include="operation.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="math_bracket.cc" />
+    <ClCompile Include="bracket.cc" />
     <ClCompile Include="expression.cc" />
     <ClCompile Include="lexem.cc" />
-    <ClCompile Include="math_function.cc" />
+    <ClCompile Include="operation.cc" />
     <ClCompile Include="tests.cc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

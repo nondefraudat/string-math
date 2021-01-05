@@ -3,20 +3,20 @@
 
 namespace nd_sm {
 
-	enum class bracket_type {
+	enum class bracket_orientation {
 		left,
 		right
 	};
 
-	class math_bracket {
+	class bracket_t {
 		const char* definition_;
-		bracket_type type_;
+		bracket_orientation orientation_;
 
 	public:
-		math_bracket(const char* definition, bracket_type type) noexcept;
+		bracket_t(const char* definition, bracket_orientation orientation) noexcept;
 		
 		const char* definition() const;
-		bracket_type type() const;
+		bracket_orientation orientation() const;
 	};
 }
 
