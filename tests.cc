@@ -5,7 +5,7 @@
 
 int main() {
 	try {
-		nd_sm::expression e = "--127 * ( -3 + 4 )";
+		nd_sm::expression e = "127 * cos( -3 + 3 )^2";
 		std::cout << e << std::endl
 			<< e.result() << std::endl;
 	}

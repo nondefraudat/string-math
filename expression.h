@@ -13,7 +13,6 @@
 namespace nd_sm {
 	class expression {
 		std::list<lexem> expression_;
-		std::list<lexem> reverse_polish_notation_;
 		std::list<lexem> result_;
 
 	protected:
@@ -25,7 +24,7 @@ namespace nd_sm {
 
 		friend std::ostream& operator<<(std::ostream& os, const expression&);
 
-		expression result();
+		expression result() noexcept;
 
 		char* c_str();
 		wchar_t* c_wstr();

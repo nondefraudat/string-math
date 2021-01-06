@@ -23,12 +23,14 @@
     <ClInclude Include="expression.h" />
     <ClInclude Include="lexem.h" />
     <ClInclude Include="operation.h" />
+    <ClInclude Include="string_math.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bracket.cc" />
     <ClCompile Include="expression.cc" />
     <ClCompile Include="lexem.cc" />
     <ClCompile Include="operation.cc" />
+    <ClCompile Include="string_math.cc" />
     <ClCompile Include="tests.cc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

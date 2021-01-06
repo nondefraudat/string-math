@@ -27,6 +27,9 @@
     <ClInclude Include="bracket.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="string_math.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lexem.cc">
@@ -42,6 +45,9 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="bracket.cc">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="string_math.cc">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
