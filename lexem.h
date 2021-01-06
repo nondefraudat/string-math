@@ -6,6 +6,7 @@
 
 #include <exception>
 #include <ostream>
+#include <string>
 
 namespace nd_sm {
 	
@@ -20,6 +21,7 @@ namespace nd_sm {
 
 	class lexem {
 		lexem_type type_;
+		const char* definition_;
 		union {
 			double number_;
 			operation_t operation_;
@@ -28,9 +30,10 @@ namespace nd_sm {
 
 	public:
 		explicit lexem(double number) noexcept;
-		explicit lexem(operation_t operation) noexcept;
-		explicit lexem(bracket_t bracket) noexcept;
+		explicit lexem(const char* definition, operation_t operation) noexcept;
+		explicit lexem(const char* definition, bracket_t bracket) noexcept;
 
+		const char* definition() const;
 		lexem_type type() const;
 		double number();
 		operation_t operation();

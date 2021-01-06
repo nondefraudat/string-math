@@ -8,6 +8,7 @@
 #include <string>
 #include <exception>
 #include <iostream>
+#include <cmath>
 
 namespace nd_sm {
 	
@@ -16,7 +17,7 @@ namespace nd_sm {
 	inline std::list<lexem> extract_result(std::list<lexem> rpn);
 
 	expression::expression(std::list<lexem> expression) {
-		expression_ = expression_;
+		expression_ = expression;
 		reverse_polish_notation_ = generate_rpn(expression_);
 		result_ = extract_result(reverse_polish_notation_);
 	}
@@ -27,8 +28,50 @@ namespace nd_sm {
 		result_ = extract_result(reverse_polish_notation_);
 	}
 
+	expression::expression(const wchar_t* definition) {
+		size_t length = std::wcslen(definition);
+		char* converted_definition = new char[length + 1]; // +1 for '\0'
+		for (int i = 0; i < length; i++) {
+			if (definition[i] > 255) {
+				throw std::exception("UNICODE character detected, ASCII character expected");
+			}
+			converted_definition[i] = static_cast<char>(definition[i]);
+		}
+		converted_definition[length] = '\0';
+		*this = expression(converted_definition);
+	}
+
 	expression expression::result() {
-		return result_;
+		return expression(result_);
+	}
+
+	char* expression::c_str() {
+		std::list<lexem>::const_iterator it = expression_.begin();
+		std::string converter = "";
+		if (it != expression_.end()) {
+			converter = it->definition();
+			it++;
+			for (it; it != expression_.end(); it++) {
+				converter += it->definition();
+				converter += ' ';
+			}
+		}
+		char* c_str = new char[converter.length() + 1]; // +1 for '\0'
+		for (int i = 0; i < converter.length(); i++) {
+			c_str[i] = converter[i];
+		}
+		c_str[converter.length()] = '\0';
+		return c_str;
+	}
+
+	wchar_t* expression::c_wstr() {
+		const char* c_str = expression::c_str();
+		size_t length = std::strlen(c_str);
+		wchar_t* c_wstr = new wchar_t[length + 1]; // +1 for '\0'
+		for (size_t i = 0; i <= length; i++) {
+			c_wstr[i] = static_cast<wchar_t>(c_wstr[i]);
+		}
+		return c_wstr;
 	}
 
 	std::list<lexem> define_standart_brackets();
@@ -36,14 +79,14 @@ namespace nd_sm {
 	inline bool is_exist(const char* ptr);
 	inline bool is_minus(const char* ptr);
 	inline bool is_digit(const char* ptr);
-	inline double extract_number_and_shift_ptr(const char*& ptr);
+	inline lexem extract_number_and_shift_ptr(const char*& ptr);
 	inline bool is_bracket(std::list<lexem> standart_brackets,
 		const char* ptr);
-	inline bracket_t extract_bracket_and_shift_ptr(std::list<lexem> standart_brackets,
+	inline lexem extract_bracket_and_shift_ptr(std::list<lexem> standart_brackets,
 		const char*& ptr);
 	inline bool is_operation(std::list<lexem> standart_functions, 
 		const char* ptr);
-	inline operation_t extract_operation_and_shift_ptr(std::list<lexem> standart_functions,
+	inline lexem extract_operation_and_shift_ptr(std::list<lexem> standart_functions,
 		const char*& ptr);
 	inline bool is_space(const char* ptr);
 	inline void shift_ptr(const char*& ptr);
@@ -58,13 +101,13 @@ namespace nd_sm {
 			if (is_digit(it) or is_minus(it) and
 				(expression.empty() or expression.back().type() != lexem_type::number)) {
 				
-				expression.push_back(lexem(extract_number_and_shift_ptr(it)));
+				expression.push_back(extract_number_and_shift_ptr(it));
 			}
 			else if (is_bracket(standart_brackets, it)) {
-				expression.push_back(lexem(extract_bracket_and_shift_ptr(standart_brackets, it)));
+				expression.push_back(extract_bracket_and_shift_ptr(standart_brackets, it));
 			}
 			else if (is_operation(standart_functions, it)) {
-				expression.push_back(lexem(extract_operation_and_shift_ptr(standart_functions, it)));
+				expression.push_back(extract_operation_and_shift_ptr(standart_functions, it));
 			}
 			else if (is_space(it)) {
 				shift_ptr(it);
@@ -81,9 +124,9 @@ namespace nd_sm {
 		std::list<lexem> standart_brackets;
 
 		standart_brackets.push_back(
-			lexem(bracket_t("(", bracket_orientation::left)));
+			lexem("(", bracket_t(bracket_orientation::left)));
 		standart_brackets.push_back(
-			lexem(bracket_t(")", bracket_orientation::right)));
+			lexem(")", bracket_t(bracket_orientation::right)));
 
 		return standart_brackets;
 	}
@@ -92,13 +135,13 @@ namespace nd_sm {
 		std::list<lexem> standart_functions;
 
 		standart_functions.push_back(
-			lexem(operation_t("+", 2, [](double args[]) -> double { return args[0] + args[1]; }, 1)));
+			lexem("+", operation_t(2, [](double args[]) -> double { return args[0] + args[1]; }, 1)));
 		standart_functions.push_back(
-			lexem(operation_t("-", 2, [](double args[]) -> double { return args[0] - args[1]; }, 1)));
+			lexem("-", operation_t(2, [](double args[]) -> double { return args[0] - args[1]; }, 1)));
 		standart_functions.push_back(
-			lexem(operation_t("*", 2, [](double args[]) -> double { return args[0] * args[1]; }, 2)));
+			lexem("*", operation_t(2, [](double args[]) -> double { return args[0] * args[1]; }, 2)));
 		standart_functions.push_back(
-			lexem(operation_t("/", 2, [](double args[]) -> double { return args[0] / args[1]; }, 2)));
+			lexem("/", operation_t(2, [](double args[]) -> double { return args[0] / args[1]; }, 2)));
 
 		return standart_functions;
 	}
@@ -118,7 +161,7 @@ namespace nd_sm {
 
 	inline bool is_dot(const char* ptr);
 
-	inline double extract_number_and_shift_ptr(const char*& ptr) {
+	inline lexem extract_number_and_shift_ptr(const char*& ptr) {
 		std::string number = "";
 		for (ptr; is_digit(ptr) or is_dot(ptr) or is_minus(ptr); ptr++) {
 			bool dot_counter = 0;
@@ -143,7 +186,7 @@ namespace nd_sm {
 				number += *ptr;
 			}
 		}
-		return std::stod(number);
+		return lexem(std::stod(number));
 	}
 
 	inline bool is_values_match(const char* definition, const char* ptr);
@@ -153,7 +196,7 @@ namespace nd_sm {
 
 		static std::list<lexem>::iterator it;
 		for (it = standart_brackets.begin(); it != standart_brackets.end(); it++) {
-			if (is_values_match(it->bracket().definition(), ptr)) {
+			if (is_values_match(it->definition(), ptr)) {
 				return true;
 			}
 		}
@@ -161,14 +204,14 @@ namespace nd_sm {
 
 	}
 
-	inline bracket_t extract_bracket_and_shift_ptr(std::list<lexem> standart_brackets,
+	inline lexem extract_bracket_and_shift_ptr(std::list<lexem> standart_brackets,
 		const char*& ptr) {
 
 		static std::list<lexem>::iterator it;
 		for (it = standart_brackets.begin(); it != standart_brackets.end(); it++) {
-			if (is_values_match(it->bracket().definition(), ptr)) {
-				ptr += std::strlen(it->bracket().definition());
-				return it->bracket();
+			if (is_values_match(it->definition(), ptr)) {
+				ptr += std::strlen(it->definition());
+				return *it;
 			}
 		}
 		throw std::exception("No matches");
@@ -189,21 +232,21 @@ namespace nd_sm {
 
 		static std::list<lexem>::iterator it;
 		for (it = standart_functions.begin(); it != standart_functions.end(); it++) {
-			if (is_values_match(it->operation().definition(), ptr)) {
+			if (is_values_match(it->definition(), ptr)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	inline operation_t extract_operation_and_shift_ptr(std::list<lexem> standart_functions,
+	inline lexem extract_operation_and_shift_ptr(std::list<lexem> standart_functions,
 		const char*& ptr) {
 
 		static std::list<lexem>::iterator it;
 		for (it = standart_functions.begin(); it != standart_functions.end(); it++) {
-			if (is_values_match(it->operation().definition(), ptr)) {
-				ptr += std::strlen(it->operation().definition());
-				return it->operation();
+			if (is_values_match(it->definition(), ptr)) {
+				ptr += std::strlen(it->definition());
+				return *it;
 			}
 		}
 		throw std::exception("No matches");
@@ -291,11 +334,13 @@ namespace nd_sm {
 	}
 
 	std::ostream& operator<<(std::ostream& os, const expression& e) {
-		static std::list<lexem>::const_iterator it;
-		for (it = e.expression_.begin(); it != e.expression_.end(); it++) {
-			os << *it << ' ';
+		std::list<lexem>::const_iterator it = e.expression_.begin();
+		if (it != e.expression_.end()) {
+			os << *it++;
+			for (it; it != e.expression_.end(); it++) {
+				os << ' ' << *it;
+			}
 		}
-		os << std::endl;
 		return os;
 	}
 }

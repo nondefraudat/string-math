@@ -2,20 +2,11 @@
 
 
 namespace nd_sm {
-	operation_t::operation_t(const char* definition,
-		size_t count_of_args, 
+	operation_t::operation_t(size_t count_of_args, 
 		double(*action)(double[]),
-		size_t priority) noexcept {
-
-		definition_ = definition;
-		count_of_args_ = count_of_args;
-		action_ = action;
-		priority_ = priority;
-	}
-
-	const char* operation_t::definition() const {
-		return definition_;
-	}
+		size_t priority) noexcept 
+		: count_of_args_(count_of_args), 
+		action_(action), priority_(priority) { }
 
 	size_t operation_t::count_of_args() const {
 		return count_of_args_;

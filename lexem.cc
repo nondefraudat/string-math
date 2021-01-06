@@ -4,20 +4,29 @@
 #include "bracket.h"
 
 #include <exception>
+#include <string>
 
 namespace nd_sm {
-	lexem::lexem(double number) noexcept : type_(lexem_type::number) {
-		number_ = number;
-	}
+	lexem::lexem(double number) noexcept : type_(lexem_type::number), number_(number) {
+		std::string converter = std::to_string(number);
+		char* definition = new char[converter.length() + 1]; // +1 for '\0'
+		for (size_t i = 0; i < converter.length(); i++) {
+			definition[i] = converter[i];
+		}
+		definition[converter.length()] = '\0';
+		definition_ = definition;
+ 	}
 
-	lexem::lexem(operation_t operation) noexcept : type_(lexem_type::function) {
-		operation_ = operation;
-	}
+	lexem::lexem(const char* definition, operation_t operation) noexcept 
+		: type_(lexem_type::function), definition_(definition), operation_(operation)  { }
 
-	lexem::lexem(bracket_t bracket) noexcept : type_(lexem_type::bracket) {
-		bracket_ = bracket;
-	}
+	lexem::lexem(const char* definition, bracket_t bracket) noexcept 
+		: type_(lexem_type::bracket), definition_(definition), bracket_(bracket) { }
 	
+	const char* lexem::definition() const {
+		return definition_;
+	}
+
 	lexem_type lexem::type() const {
 		return type_;
 	}
@@ -44,17 +53,7 @@ namespace nd_sm {
 	}
 
 	std::ostream& operator<<(std::ostream& os, const lexem& l) {
-		switch (l.type()) {
-		case lexem_type::number:
-			os << l.number_;
-			break;
-		case lexem_type::function:
-			os << l.operation_.definition();
-			break;
-		case lexem_type::bracket:
-			os << l.bracket_.definition();
-			break;
-		}
+		os << l.definition();
 		return os;
 	}
 }

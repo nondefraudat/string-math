@@ -6,7 +6,9 @@
 #include "bracket.h"
 
 #include <list> 
-#include <ostream>
+#include <string>
+#include <exception>
+#include <iostream>
 
 namespace nd_sm {
 	class expression {

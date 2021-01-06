@@ -9,13 +9,10 @@ namespace nd_sm {
 	};
 
 	class bracket_t {
-		const char* definition_;
 		bracket_orientation orientation_;
 
 	public:
-		bracket_t(const char* definition, bracket_orientation orientation) noexcept;
-		
-		const char* definition() const;
+		bracket_t(bracket_orientation orientation) noexcept;
 		bracket_orientation orientation() const;
 	};
 }
