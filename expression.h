@@ -15,7 +15,7 @@
 #include <limits>
 
 namespace nd_sm {
-	EXPORT class expression {
+	class EXPORT expression {
 		std::list<lexem> expression_;
 		std::list<lexem> result_;
 

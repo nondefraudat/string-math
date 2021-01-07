@@ -6,7 +6,7 @@
 #include "expression.h"
 
 namespace nd_sm {
-	EXPORT expression calculate(expression);
+	expression EXPORT calculate(expression);
 }
 
 #endif

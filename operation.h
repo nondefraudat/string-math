@@ -4,8 +4,7 @@
 #define EXPORT __declspec(dllexport)
 
 namespace nd_sm {
-
-	EXPORT class operation_t {
+	class EXPORT operation_t {
 		size_t count_of_args_;
 		double(*action_)(double[]);
 		size_t priority_;
@@ -19,7 +18,6 @@ namespace nd_sm {
 		double execute(double args[]) noexcept;
 		size_t priority() const;
 	};
-
 }
 
 #endif

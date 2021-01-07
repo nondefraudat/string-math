@@ -11,13 +11,13 @@
 #include <string>
 
 namespace  nd_sm {
-	EXPORT enum class lexem_type {
+	enum class lexem_type {
 		number,
 		function,
 		bracket
 	};
 
-	EXPORT class lexem {
+	class EXPORT lexem {
 		lexem_type type_;
 		const char* definition_;
 		union {

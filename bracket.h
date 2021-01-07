@@ -4,12 +4,12 @@
 #define EXPORT __declspec(dllexport)
 
 namespace nd_sm {
-	EXPORT enum class bracket_orientation {
+	enum class bracket_orientation {
 		left,
 		right
 	};
 
-	EXPORT class bracket_t {
+	class EXPORT  bracket_t {
 		bracket_orientation orientation_;
 
 	public:
