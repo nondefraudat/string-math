@@ -1,6 +1,8 @@
 #ifndef NONDEFRAUDAT_STRING_MATH_LEXEM_H_
 #define NONDEFRAUDAT_STRING_MATH_LEXEM_H_
 
+#define EXPORT __declspec(dllexport)
+
 #include "operation.h"
 #include "bracket.h"
 
@@ -8,17 +10,14 @@
 #include <ostream>
 #include <string>
 
-namespace nd_sm {
-	enum class lexem_type {
+namespace  nd_sm {
+	EXPORT enum class lexem_type {
 		number,
 		function,
 		bracket
 	};
 
-	class operation_t;
-	class bracket_t;
-
-	class lexem {
+	EXPORT class lexem {
 		lexem_type type_;
 		const char* definition_;
 		union {

@@ -1,13 +1,15 @@
 #ifndef NONDEFRAUDAT_STRING_MATH_BRACKET_H_
 #define NONDEFRAUDAT_STRING_MATH_BRACKET_H_
 
+#define EXPORT __declspec(dllexport)
+
 namespace nd_sm {
-	enum class bracket_orientation {
+	EXPORT enum class bracket_orientation {
 		left,
 		right
 	};
 
-	class bracket_t {
+	EXPORT class bracket_t {
 		bracket_orientation orientation_;
 
 	public:

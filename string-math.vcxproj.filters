@@ -47,8 +47,5 @@
     <ClCompile Include="string_math.cc">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="dll_main.cc">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

@@ -303,6 +303,9 @@ namespace nd_sm {
 	
 	expression::expression(const wchar_t* definition) : expression(convert_to_c_str(definition)) { }
 
+	expression::~expression() {
+	}
+
 	char* convert_to_c_str(const wchar_t* definition) {
 		size_t length = std::wcslen(definition);
 		char* converted_definition = new char[length + 1]; // +1 for '\0'

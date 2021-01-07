@@ -1,6 +1,8 @@
 #ifndef NONDEFRAUDAT_STRING_MATH_EXPRESSION_H_
 #define NONDEFRAUDAT_STRING_MATH_EXPRESSION_H_
 
+#define EXPORT __declspec(dllexport)
+
 #include "lexem.h"
 #include "operation.h"
 #include "bracket.h"
@@ -13,7 +15,7 @@
 #include <limits>
 
 namespace nd_sm {
-	class expression {
+	EXPORT class expression {
 		std::list<lexem> expression_;
 		std::list<lexem> result_;
 
@@ -23,6 +25,8 @@ namespace nd_sm {
 	public:
 		expression(const char* definition);
 		expression(const wchar_t* definition);
+
+		~expression();
 
 		friend std::ostream& operator<<(std::ostream& os, const expression&);
 

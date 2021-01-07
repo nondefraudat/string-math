@@ -151,11 +151,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bracket.cc" />
-    <ClCompile Include="dll_main.cc" />
     <ClCompile Include="expression.cc" />
     <ClCompile Include="lexem.cc" />
     <ClCompile Include="operation.cc" />
-    <ClCompile Include="string_math.cc" />
+    <ClCompile Include="string_math.cc">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreaded</RuntimeLibrary>
+    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
