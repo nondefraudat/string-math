@@ -7,20 +7,26 @@
 #include <string>
 
 namespace nd_sm {
-	inline const char* extract_definition(double number);
+	char* extract_definition(double number);
 
 	lexem::lexem(double number) noexcept : type_(lexem_type::number), number_(number) {
 		definition_ = extract_definition(number);
  	}
 
-	inline const char* extract_definition(double number) {
+	char* remove_trailing_zeros(char* definition);
+
+	char* extract_definition(double number) {
 		std::string converter = std::to_string(number);
 		char* definition = new char[converter.length() + 1]; // +1 for '\0'
 		for (size_t i = 0; i < converter.length(); i++) {
 			definition[i] = converter[i];
 		}
 		definition[converter.length()] = '\0';
-		char* it = &definition[converter.length() - 1];
+		return remove_trailing_zeros(definition);;
+	}
+
+	char* remove_trailing_zeros(char* definition) {
+		char* it = &definition[strlen(definition) - 1];
 		while (*it == '0') {
 			*it = '\0';
 			it--;
@@ -30,6 +36,8 @@ namespace nd_sm {
 		}
 		return definition;
 	}
+
+
 
 	lexem::lexem(const char* definition, operation_t operation) noexcept 
 		: type_(lexem_type::function), definition_(definition), operation_(operation)  { }

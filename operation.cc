@@ -1,6 +1,5 @@
 #include "operation.h"
 
-
 namespace nd_sm {
 	operation_t::operation_t(size_t count_of_args, 
 		double(*action)(double[]),

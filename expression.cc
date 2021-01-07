@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES 
+
 #include "expression.h"
 
 #include "lexem.h"
@@ -9,14 +11,11 @@
 #include <exception>
 #include <iostream>
 #include <cmath>
+#include <limits>
 
 namespace nd_sm {
 
-	inline std::list<lexem> generate_rpn(std::list<lexem> expression);
-	inline std::list<lexem> extract_result(std::list<lexem> rpn);
-	inline std::list<lexem> define_standart_lexems();
-
-	expression::expression(std::list<lexem> expression) {
+	expression::expression(std::list<lexem> expression) noexcept {
 		expression_ = result_ = expression;
 	}
 
@@ -158,7 +157,9 @@ namespace nd_sm {
 			lexem("*", operation_t(2, [](double args[]) -> double { return args[0] * args[1]; }, 2)));
 		standart_operations.push_back(
 			lexem("/", operation_t(2, [](double args[]) -> double { return args[0] / args[1]; }, 2)));
-
+		
+		standart_operations.push_back(
+			lexem("%", operation_t(2, [](double args[]) -> double { return std::fmod(args[1], args[0]); }, 3)));
 		standart_operations.push_back(
 			lexem("^", operation_t(2, [](double args[]) -> double { return std::pow(args[0], args[1]); }, 3)));
 		standart_operations.push_back(
@@ -170,6 +171,30 @@ namespace nd_sm {
 			lexem("cos", operation_t(1, [](double args[]) -> double { return std::cos(args[0]); }, 3)));
 		standart_operations.push_back(
 			lexem("tan", operation_t(1, [](double args[]) -> double { return std::tan(args[0]); }, 3)));
+
+		standart_operations.push_back(
+			lexem("asin", operation_t(1, [](double args[]) -> double { return std::asin(args[0]); }, 3)));
+		standart_operations.push_back(
+			lexem("acos", operation_t(1, [](double args[]) -> double { return std::acos(args[0]); }, 3)));
+		standart_operations.push_back(
+			lexem("atan", operation_t(1, [](double args[]) -> double { return std::atan(args[0]); }, 3)));
+
+		standart_operations.push_back(
+			lexem("log", operation_t(2, [](double args[]) -> double { return std::log(args[1]) / std::log(args[0]); }, 3)));
+		standart_operations.push_back(
+			lexem("ln", operation_t(1, [](double args[]) -> double { return std::log(args[0]); }, 3)));
+		standart_operations.push_back(
+			lexem("lg", operation_t(1, [](double args[]) -> double { return std::log10(args[0]); }, 3)));
+
+		standart_operations.push_back(
+			lexem("abs", operation_t(1, [](double args[]) -> double { return std::abs(args[0]); }, 3)));
+
+		standart_operations.push_back(
+			lexem("pi", operation_t(0, [](double args[]) -> double { return M_PI; }, 4)));
+		standart_operations.push_back(
+			lexem("inf", operation_t(0, [](double args[]) -> double { return std::numeric_limits<double>::infinity(); }, 4)));
+		standart_operations.push_back(
+			lexem("e", operation_t(0, [](double args[]) -> double { return M_E; }, 4)));
 
 		return standart_operations;
 	}
@@ -320,9 +345,9 @@ namespace nd_sm {
 		size_t length = std::strlen(c_str);
 		wchar_t* c_wstr = new wchar_t[length + 1]; // +1 for '\0'
 		for (size_t i = 0; i < length; i++) {
-			c_wstr[i] = static_cast<wchar_t>(c_wstr[i]);
+			c_wstr[i] = static_cast<wchar_t>(c_str[i]);
 		}
-		c_wstr[length] = '\0';
+		c_wstr[length] = L'\0';
 		return c_wstr;
 	}
 

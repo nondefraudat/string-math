@@ -9,6 +9,8 @@
 #include <string>
 #include <exception>
 #include <iostream>
+#include <cmath>
+#include <limits>
 
 namespace nd_sm {
 	class expression {
@@ -16,7 +18,7 @@ namespace nd_sm {
 		std::list<lexem> result_;
 
 	protected:
-		expression(std::list<lexem> expression);
+		expression(std::list<lexem> expression) noexcept;
 
 	public:
 		expression(const char* definition);

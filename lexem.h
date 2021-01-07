@@ -9,7 +9,6 @@
 #include <string>
 
 namespace nd_sm {
-	
 	enum class lexem_type {
 		number,
 		function,
@@ -41,7 +40,6 @@ namespace nd_sm {
 
 		friend std::ostream& operator<<(std::ostream& os, const lexem&);
 	};
-
 }
 
 #endif
