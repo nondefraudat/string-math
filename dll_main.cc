@@ -5,6 +5,5 @@
 #include <windows.h>
 
 BOOL APIENTRY DllMain(HMODULE, DWORD, LPVOID) {
-    return EXIT_SUCCESS; 
+    return EXIT_SUCCESS;
 }
-

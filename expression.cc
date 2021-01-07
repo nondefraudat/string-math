@@ -285,7 +285,7 @@ namespace nd_sm {
 			case lexem_type::function:
 				size_t count = it->operation().count_of_args();
 				double* args = new double[count];
-				for (int i = count - 1; i >= 0; i--) {
+				for (size_t i = count - 1; i >= 0; i--) {
 					args[i] = stack.front().number();
 					stack.pop_front();
 				}
