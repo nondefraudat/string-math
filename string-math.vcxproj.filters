@@ -15,6 +15,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bracket.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
     <ClInclude Include="expression.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
@@ -24,30 +27,27 @@
     <ClInclude Include="operation.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="bracket.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="string_math.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="lexem.cc">
+    <ClCompile Include="bracket.cc">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="expression.cc">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="tests.cc">
+    <ClCompile Include="lexem.cc">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="operation.cc">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="bracket.cc">
+    <ClCompile Include="string_math.cc">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="string_math.cc">
+    <ClCompile Include="dll_main.cc">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
