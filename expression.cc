@@ -156,7 +156,13 @@ namespace nd_sm {
 		standart_operations.push_back(
 			lexem("*", operation_t(2, [](double args[]) -> double { return args[0] * args[1]; }, 2)));
 		standart_operations.push_back(
-			lexem("/", operation_t(2, [](double args[]) -> double { return args[0] / args[1]; }, 2)));
+			lexem("/", operation_t(2, 
+				[](double args[]) -> double { 
+					if (args[1] == 0) {
+						throw std::exception("division by zero");
+					}
+					return args[0] / args[1]; 
+				}, 2)));
 		
 		standart_operations.push_back(
 			lexem("%", operation_t(2, [](double args[]) -> double { return std::fmod(args[1], args[0]); }, 3)));
@@ -164,6 +170,15 @@ namespace nd_sm {
 			lexem("^", operation_t(2, [](double args[]) -> double { return std::pow(args[0], args[1]); }, 3)));
 		standart_operations.push_back(
 			lexem("sqrt", operation_t(1, [](double args[]) -> double { return std::sqrt(args[0]); }, 3)));
+		standart_operations.push_back(
+			lexem("fact", operation_t(1,
+				[](double args[]) -> double {
+					int result = 1;
+					for (int i = 1; i <= args[0]; i++) {
+						result *= i;
+					}
+					return result;
+				}, 3)));
 
 		standart_operations.push_back(
 			lexem("sin", operation_t(1, [](double args[]) -> double { return std::sin(args[0]); }, 3)));
@@ -241,9 +256,13 @@ namespace nd_sm {
 				break;
 			case lexem_type::bracket:
 				if (it->bracket().orientation() == bracket_orientation::right) {
-					while (stack.front().type() != it->type()) {
+					while (!stack.empty() 
+						and stack.front().type() != it->type()) {
 						rpn.push_back(stack.front());
 						stack.pop_front();
+					}
+					if (stack.empty()) {
+						throw std::exception("bracket structure error");
 					}
 					stack.pop_front();
 				}
@@ -286,6 +305,9 @@ namespace nd_sm {
 				size_t count = it->operation().count_of_args();
 				double* args = new double[count];
 				for (int i = count - 1; i >= 0; i--) {
+					if (stack.empty()) {
+						throw std::exception("invalid expresssion structure");
+					}
 					args[i] = stack.front().number();
 					stack.pop_front();
 				}
