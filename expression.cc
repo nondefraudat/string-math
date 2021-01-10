@@ -90,8 +90,8 @@ namespace nd_sm {
 		if (minus_count % 2) {
 			number += '-';
 		}
+		bool dot_counter = 0;
 		for (ptr; is_digit(ptr) or is_dot(ptr); ptr++) {
-			static bool dot_counter = 0;
 			if (is_dot(ptr)) {
 				if (dot_counter) {
 					throw std::exception("Float value must have only one '.' in definition!");
@@ -156,13 +156,7 @@ namespace nd_sm {
 		standart_operations.push_back(
 			lexem("*", operation_t(2, [](double args[]) -> double { return args[0] * args[1]; }, 2)));
 		standart_operations.push_back(
-			lexem("/", operation_t(2, 
-				[](double args[]) -> double { 
-					if (args[1] == 0) {
-						throw std::exception("division by zero");
-					}
-					return args[0] / args[1]; 
-				}, 2)));
+			lexem("/", operation_t(2, [](double args[]) -> double { return args[0] / args[1]; }, 2)));
 		
 		standart_operations.push_back(
 			lexem("%", operation_t(2, [](double args[]) -> double { return std::fmod(args[1], args[0]); }, 3)));
@@ -311,13 +305,12 @@ namespace nd_sm {
 					args[i] = stack.front().number();
 					stack.pop_front();
 				}
-				try {
-					stack.push_front(lexem(it->operation().execute(args)));
-				}
-				catch (std::exception e) {
-					throw e;
-				}
+				stack.push_front(lexem(it->operation().execute(args)));
 				delete[] args;
+				if (stack.front().number() != stack.front().number()
+					or stack.front().number() == std::numeric_limits<double>::infinity()) {
+					throw std::exception("invalid operation");
+				}
 				break;
 			}
 		}
