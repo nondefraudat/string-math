@@ -311,7 +311,12 @@ namespace nd_sm {
 					args[i] = stack.front().number();
 					stack.pop_front();
 				}
-				stack.push_front(lexem(it->operation().execute(args)));
+				try {
+					stack.push_front(lexem(it->operation().execute(args)));
+				}
+				catch (std::exception e) {
+					throw e;
+				}
 				delete[] args;
 				break;
 			}
