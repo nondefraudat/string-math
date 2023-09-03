@@ -16,5 +16,5 @@ public:
 
 private:
 	ExpressionParser expressionParser;
-	MathNodePtr root;
+	ExpressionNodePtr root;
 };
