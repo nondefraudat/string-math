@@ -1,10 +1,17 @@
-#include "mathexpression.hpp"
+#include "parser.hpp"
 #include <iostream>
 
 using namespace std;
 
 int main() {
-	MathExpression expression = "2 + 2 * 2";
-	cout << expression.definition() << '=' << expression.result() << endl;
+	std::string expression("2 + 2 * 2");
+	Parser parser;
+	NodePtr root = parser.parse(expression);
+	if (!root) {
+		cout << "error\n";
+	}
+	else {
+		cout << root->getDefinition() << " = " << root->getResult() << endl;
+	}
 	return EXIT_SUCCESS;
 }
