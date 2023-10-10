@@ -1,4 +1,4 @@
 #pragma once
 #include "expression.hpp"
 
-double calculate(std::string& expression) noexcept;
+double calculate(const std::string& expression) noexcept;
