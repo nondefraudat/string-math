@@ -6,10 +6,11 @@ using NumberStack = stack<NumberPtr>;
 using OperationStack = stack<OperationPtr>;
 
 Parser::Parser() noexcept {
-	defineOperationTemplate("+", 1, OperationMethodTemplate(+));
-	defineOperationTemplate("-", 1, OperationMethodTemplate(-));
-	defineOperationTemplate("*", 2, OperationMethodTemplate(*));
-	defineOperationTemplate("/", 2, OperationMethodTemplate(/));
+	defineOperationTemplate("+", 1, StandartOperationTemplate(+));
+	defineOperationTemplate("-", 1, StandartOperationTemplate(-));
+	defineOperationTemplate("*", 2, StandartOperationTemplate(*));
+	defineOperationTemplate("/", 2, StandartOperationTemplate(/));
+	defineOperationTemplate("^", 3, FunctionOperationTemplate(pow));
 }
 
 NodePtr Parser::parse(const std::string& expression) const noexcept {

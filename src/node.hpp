@@ -3,9 +3,13 @@
 #include <string>
 #include <memory>
 
-#define OperationMethodTemplate(action)\
+#define StandartOperationTemplate(action)\
 [](const NodePtr& left, const NodePtr& right) -> double {\
 	return left->getResult() action right->getResult();\
+}
+#define FunctionOperationTemplate(function)\
+[](const NodePtr& left, const NodePtr& right) -> double {\
+	return function(left->getResult(), right->getResult());\
 }
 
 using NodePtr = std::shared_ptr<class Node>;
