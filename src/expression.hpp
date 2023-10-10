@@ -9,7 +9,7 @@ std::ostream& operator<<(std::ostream& os, const class Expression& expression);
 
 class Expression {
 public:
-	Expression(const std::string& expression, const Parser& parser = Parser()) noexcept;
+	Expression(const std::string& expression, Parser parser = Parser()) noexcept;
 	Expression(const char* expression) noexcept;
 
 	bool isValid() const noexcept;

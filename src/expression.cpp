@@ -7,7 +7,7 @@ std::ostream& operator<<(std::ostream& os, const Expression& expression) {
 	return os << expression.getDefinition();
 }
 
-Expression::Expression(const std::string& expression, const Parser& parser) noexcept
+Expression::Expression(const std::string& expression, Parser parser) noexcept
 	: root(parser.parse(expression)) { }
 
 Expression::Expression(const char* expression) noexcept

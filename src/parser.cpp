@@ -13,90 +13,10 @@ Parser::Parser() noexcept {
 	defineOperationTemplate("^", 3, FunctionOperationTemplate(pow));
 }
 
-NodePtr Parser::parse(const std::string& expression) const noexcept {
-	NodePtr root = nullptr;
-	NumberStack numbers;
-	OperationStack operations;
+NodePtr Parser::parse(const std::string& expression) noexcept {
 	string::const_iterator iterator = expression.cbegin();
-	while (iterator != expression.cend()) {
-		if (isInsignificant(*iterator)) {
-			iterator++;
-			continue;
-		}
-		if (isDigit(*iterator) || isDot(*iterator)) {
-			NumberPtr number = parseNumber(iterator, expression.cend());
-			if (!number) {
-				return nullptr;
-			}
-			numbers.push(number);
-			continue;
-		}
-		OperationPtr operation = parseOperation(iterator, expression.cend());
-		if (!operation || numbers.empty()) {
-			return nullptr;
-		}
-		if (operations.empty() || operation->getPriority() < operations.top()->getPriority()) {
-			while (!operations.empty()) {
-				if (numbers.empty()) {
-					return nullptr;
-				}
-				OperationPtr operation = operations.top();
-				operations.pop();
-				operation->setLeftNode(numbers.top());
-				numbers.pop();
-				if (root) {
-					operation->setRightNode(root);
-					root = operation;
-					continue;
-				}
-				else if (numbers.empty()) {
-					return nullptr;
-				}
-				operation->setRightNode(numbers.top());
-				numbers.pop();
-				root = operation;
-			}
-			operations.push(operation);
-		}
-		else {
-			operation->setLeftNode(numbers.top());
-			numbers.pop();
-			if (root) {
-				operation->setRightNode(root);
-				root = operation;
-				continue;
-			}
-			else if (numbers.empty()) {
-				return nullptr;
-			}
-			operation->setRightNode(numbers.top());
-			numbers.pop();
-			root = operation;
-		}
-	}
-	while (!operations.empty()) {
-		if (numbers.empty()) {
-			return nullptr;
-		}
-		OperationPtr operation = operations.top();
-		operations.pop();
-		operation->setLeftNode(numbers.top());
-		numbers.pop();
-		if (root) {
-			operation->setRightNode(root);
-			root = operation;
-			continue;
-		}
-		else if (numbers.empty()) {
-			return nullptr;
-		}
-		operation->setRightNode(numbers.top());
-		numbers.pop();
-		root = operation;
-	}
-	if (!numbers.empty()) {
-		return nullptr;
-	}
+	parseNext(iterator, expression.cend());
+	clearStacks();
 	return root;
 }
 
@@ -144,20 +64,70 @@ bool Parser::isDot(const char symbol) noexcept {
 	return symbol == '.';
 }
 
-bool Parser::isValid(const char symbol) noexcept {
-	return isInsignificant(symbol) || isDigit(symbol) || isDot(symbol);
+bool Parser::isValidNumeric(const char symbol) noexcept {
+	return isDigit(symbol) || isDot(symbol) || isInsignificant(symbol);
 }
 
-NumberPtr Parser::parseNumber(std::string::const_iterator& iterator, const std::string::const_iterator& terminator) const noexcept {
+void Parser::parseNext(std::string::const_iterator& iterator, const std::string::const_iterator& terminator) noexcept {
+	skipInsegnificants(iterator, terminator);
+	if (iterator == terminator) {
+		return;
+	}
+	if (isValidNumeric(*iterator)) {
+		NumberPtr number = parseNumber(iterator, terminator);
+		if (!number) {
+			return;
+		}
+		numberStack.push(number);
+	}
+	OperationPtr operation = parseOperation(iterator, terminator);
+	if (!operation) {
+		return;
+	}
+	if (operationStack.empty() ||
+			operation->getPriority() < operationStack.top()->getPriority()) {
+		operationStack.push(operation);
+	}
+	else if (!root) {
+		if (numberStack.empty()) {
+			return;
+		}
+		operation->setLeftNode(numberStack.top());
+		numberStack.pop();
+		NumberPtr number = parseNumber(iterator, terminator);
+		if (!number) {
+			return;
+		}
+		operation->setRightNode(number);
+		root = operation;
+	}
+	else if (numberStack.empty()) {
+		return;
+	}
+	else {
+		operation->setLeftNode(numberStack.top());
+		operation->setRightNode(root);
+		root = operation;
+	}
+	parseNext(iterator, terminator);
+}
+
+void Parser::skipInsegnificants(std::string::const_iterator& iterator, const std::string::const_iterator& terminator) noexcept {
+	while (iterator != terminator && isInsignificant(*iterator)) {
+		iterator++;
+	}
+}
+
+NumberPtr Parser::parseNumber(std::string::const_iterator& iterator, const std::string::const_iterator& terminator) noexcept {
 	string buffer("");
-	while (iterator != terminator && isValid(*iterator)) {
+	while (iterator != terminator && isValidNumeric(*iterator)) {
 		buffer.push_back(*iterator);
 		iterator++;
 	}
 	return parseNumber(buffer);
 }
 
-OperationPtr Parser::parseOperation(std::string::const_iterator& iterator, const std::string::const_iterator& terminator) const noexcept {
+OperationPtr Parser::parseOperation(std::string::const_iterator& iterator, const std::string::const_iterator& terminator) noexcept {
 	string buffer("");
 	while (iterator != terminator) {
 		buffer.push_back(*iterator);
@@ -168,4 +138,31 @@ OperationPtr Parser::parseOperation(std::string::const_iterator& iterator, const
 		}
 	}
 	return nullptr;
+}
+
+void Parser::clearStacks() noexcept {
+	while (!operationStack.empty()) {
+		OperationPtr operation = operationStack.top();
+		operationStack.pop();
+		if (numberStack.empty()) {
+			return;
+		}
+		operation->setLeftNode(numberStack.top());
+		numberStack.pop();
+		if (root) {
+			operation->setRightNode(root);
+			root = operation;
+		}
+		else if (numberStack.empty()) {
+			return;
+		}
+		else {
+			operation->setRightNode(numberStack.top());
+			numberStack.pop();
+		}
+	}
+	if (numberStack.size() == 1 && !root) {
+		root = numberStack.top();
+		numberStack.pop();
+	}
 }
