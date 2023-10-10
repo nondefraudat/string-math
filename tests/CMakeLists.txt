@@ -6,3 +6,9 @@ link_libraries("string-math")
 include_directories("${CMAKE_SOURCE_DIR}/src")
 
 add_executable(definition definition.cpp)
+add_executable(result result.cpp)
+
+enable_testing()
+
+add_test(NAME DefinitionTests COMMAND definition)
+add_test(NAME ResultTests COMMAND result)

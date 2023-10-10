@@ -11,8 +11,4 @@ file(GLOB_RECURSE PROJECT_SOURCES "src/*")
 add_library(${PROJECT_NAME} ${PROJECT_SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 23)
 
-
 add_subdirectory(tests)
-
-enable_testing()
-add_test(NAME definition COMMAND definition)

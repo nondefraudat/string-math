@@ -3,6 +3,7 @@
 #include "node.hpp"
 #include <map>
 #include <tuple>
+#include <stack>
 
 using OperationTemplates = std::map<std::string, std::tuple<int, OperationMethod>>;
 
@@ -29,4 +30,6 @@ private:
 			const std::string::const_iterator& terminator) const noexcept;
 
 	OperationTemplates operationTemplates;
+	std::stack<OperationPtr> operationStack;
+	std::stack<NumberPtr> numberStack;
 };
