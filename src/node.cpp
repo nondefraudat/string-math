@@ -25,6 +25,9 @@ Operation::Operation(const std::string& definition,
 		: Node(definition), priority(priority), method(method) { }
 
 std::string Operation::getDefinition() const noexcept {
+	if (!left || !right) {
+		return "";
+	}
 	return format("{} {} {}", left->getDefinition(),
 			Node::getDefinition(), right->getDefinition());
 }
@@ -43,4 +46,25 @@ void Operation::setLeftNode(const NodePtr& node) noexcept {
 
 void Operation::setRightNode(const NodePtr& node) noexcept {
 	right = node;
+}
+
+Brackets::Brackets(const std::string& left, const std::string& right) noexcept
+		: Node(left + "{}" + right) { }
+
+std::string Brackets::getDefinition() const noexcept {
+	if (!child) {
+		return "";
+	}
+	return format(Node::getDefinition(), child->getDefinition());
+}
+
+double Brackets::getResult() const noexcept {
+	if (!child) {
+		return numeric_limits<double>::quiet_NaN();
+	}
+	return child->getResult();
+}
+
+void Brackets::setChildNode(const NodePtr& node) noexcept {
+
 }

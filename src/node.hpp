@@ -58,3 +58,16 @@ private:
 	NodePtr left = nullptr;
 	NodePtr right = nullptr;
 };
+
+class Brackets : public Node {
+public:
+	explicit Brackets(const std::string& left, const std::string& right) noexcept;
+
+	std::string getDefinition() const noexcept override;
+	double getResult() const noexcept override;
+
+	void setChildNode(const NodePtr& node) noexcept;
+
+private:
+	NodePtr child;
+};
