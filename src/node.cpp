@@ -1,46 +1,116 @@
 #include "node.hpp"
-#include <format>
+#include <limits>
 
 using namespace std;
 
-Node::Node(const std::string& definition) noexcept
-		: definition(definition) { }
+const double Node::errorValue(numeric_limits<double>::quiet_NaN());
 
-std::string Node::getDefinition() const noexcept {
-	return definition;
+bool Node::pushNode(const NodePtr &node) noexcept {
+    return false;
 }
 
-Number::Number(const double result) noexcept
-		: Node(to_string(result)), result(result) { }
-
-Number::Number(const std::string& definition) noexcept
-		: Node(definition), result(stod(definition)) { }
-
-double Number::getResult() const noexcept {
-	return result;
+Node::Priority Node::getPriority() const noexcept {
+    return Priority::ABSOLUT;
 }
 
-Operation::Operation(const std::string& definition,
-		const int priority, const OperationMethod& method) noexcept
-		: Node(definition), priority(priority), method(method) { }
+Root::Root() noexcept : trunk(nullptr) { }
 
-std::string Operation::getDefinition() const noexcept {
-	return format("{} {} {}", left->getDefinition(),
-			Node::getDefinition(), right->getDefinition());
+double Root::calculate() const noexcept {
+	if (!trunk) {
+		return errorValue;
+	}
+    return trunk->calculate();
 }
 
-double Operation::getResult() const noexcept {
-	return method(left, right);
+std::string Root::parseDefinition() const noexcept {
+	if (!trunk) {
+		return "";
+	}
+    return trunk->parseDefinition();
 }
 
-int Operation::getPriority() const noexcept {
-	return priority;
+bool Root::pushNode(const NodePtr &node) noexcept {
+    if (!trunk) {
+		trunk = node;
+		return true;
+	}
+	if (node->getPriority() >= trunk->getPriority()) {
+		return trunk->pushNode(node);
+	}
+	if (node->pushNode(trunk)) {
+		trunk = node;
+		return true;
+	}
+	return false;
 }
 
-void Operation::setLeftNode(const NodePtr& node) noexcept {
-	left = node;
+Number::Number(const double value) noexcept
+		: value(value) {
+	definition = to_string(value);
+	definition.erase(definition.find_last_not_of('0') + 1, string::npos);
+	definition.erase(definition.find_last_not_of('.') + 1, string::npos);
 }
 
-void Operation::setRightNode(const NodePtr& node) noexcept {
-	right = node;
+double Number::calculate() const noexcept {
+    return value;
+}
+
+std::string Number::parseDefinition() const noexcept {
+    return definition;
+}
+
+Operation::Operation(const std::string &definition,
+		const Method &method) noexcept
+		: definition(" " + definition + " "), method(method),
+		left(nullptr), right(nullptr) { }
+
+double Operation::calculate() const noexcept {
+	if (!left || !right) {
+		return errorValue;
+	}
+    return method(left->calculate(), right->calculate());
+}
+
+std::string Operation::parseDefinition() const noexcept {
+    if (!left || !right) {
+		return "";
+	}
+	return left->parseDefinition() + definition + right->parseDefinition();
+}
+
+bool Operation::pushNode(const NodePtr &node) noexcept {
+	if (!left) {
+		left = node;
+		return true;
+	}
+	if (!right) {
+		right = node;
+		return true;
+	}
+	if (node->getPriority() >= right->getPriority()) {
+		return right->pushNode(node);
+	}
+	if (node->pushNode(right)) {
+		right = node;
+		return true;
+	}
+    return false;
+}
+
+Brackets::Brackets(const std::string &left, const std::string &right,
+		const NodePtr& root) noexcept 
+		: left(" " + left), right(right + " "), root(root) { }
+
+double Brackets::calculate() const noexcept {
+    if (!root) {
+		return errorValue;
+	}
+	return root->calculate();
+}
+
+std::string Brackets::parseDefinition() const noexcept {
+	if (!root) {
+		return "";
+	}
+    return left + root->parseDefinition() + right;
 }

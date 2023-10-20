@@ -1,35 +1,29 @@
 #pragma once
-
 #include "node.hpp"
 #include <map>
 #include <tuple>
-#include <stack>
 
-using OperationTemplates = std::map<std::string, std::tuple<int, OperationMethod>>;
+#define StandartMethod(action) [](const double l, const double r) -> double {\
+	return l action r;\
+}
+#define FunctionMethod(action) [](const double l, const double r) -> double {\
+	return action(l, r);\
+}
 
 class Parser {
 public:
 	Parser() noexcept;
+	NodePtr parse(const std::string& expression) noexcept;
 
-	NodePtr parse(const std::string& expression) const noexcept;
-	NumberPtr parseNumber(const std::string& definition) const noexcept;
-	OperationPtr parseOperation(const std::string& definition) const noexcept;
-
-	void defineOperationTemplate(const std::string& definition,
-			const int priority, const OperationMethod& method) noexcept;
+	void registerOperation(const std::string& definition,
+			const Operation::Method& method,
+			const Node::Priority priority) noexcept;
+	void registerBrackets(const std::string& left, const std::string& right) noexcept;
 
 private:
-	static bool isInsignificant(const char symbol) noexcept;
-	static bool isDigit(const char symbol) noexcept;
-	static bool isDot(const char symbol) noexcept;
-	static bool isValid(const char symbol) noexcept;
+	std::map<std::string, std::tuple<Operation::Method, Node::Priority>> operations;
+	std::map<std::string, std::string> brackets;
 
-	NumberPtr parseNumber(std::string::const_iterator& iterator,
-			const std::string::const_iterator& terminator) const noexcept;
-	OperationPtr parseOperation(std::string::const_iterator& iterator,
-			const std::string::const_iterator& terminator) const noexcept;
-
-	OperationTemplates operationTemplates;
-	std::stack<OperationPtr> operationStack;
-	std::stack<NumberPtr> numberStack;
+	void registerDefaultOperations() noexcept;
+	NodePtr parseNext() noexcept;
 };

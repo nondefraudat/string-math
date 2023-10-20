@@ -1,60 +1,74 @@
 #pragma once
-
-#include <string>
 #include <memory>
-
-#define StandartOperationTemplate(action)\
-[](const NodePtr& left, const NodePtr& right) -> double {\
-	return left->getResult() action right->getResult();\
-}
-#define FunctionOperationTemplate(function)\
-[](const NodePtr& left, const NodePtr& right) -> double {\
-	return function(left->getResult(), right->getResult());\
-}
+#include <string>
 
 using NodePtr = std::shared_ptr<class Node>;
+using RootPtr = std::shared_ptr<class Root>;
 using NumberPtr = std::shared_ptr<class Number>;
 using OperationPtr = std::shared_ptr<class Operation>;
 
 class Node {
 public:
-	explicit Node(const std::string& definition) noexcept;
+	enum class Priority : unsigned char {
+		LOW = 1, NORMAL, HIGH, ABSOLUT
+	};
 
-	virtual std::string getDefinition() const noexcept;
-	virtual double getResult() const noexcept = 0;
+	static const double errorValue;
+
+	virtual double calculate() const noexcept = 0;
+	virtual std::string parseDefinition() const noexcept = 0;
+
+	virtual bool pushNode(const NodePtr& node) noexcept;
+	virtual Priority getPriority() const noexcept;
+};
+
+class Root : public Node {
+public:
+	Root() noexcept;
+
+	double calculate() const noexcept override;
+	std::string parseDefinition() const noexcept override;
+	bool pushNode(const NodePtr& node) noexcept override;
 
 private:
-	std::string definition;
+	NodePtr trunk;
 };
 
 class Number : public Node {
 public:
-	explicit Number(const double result) noexcept;
-	explicit Number(const std::string& definition) noexcept;
-
-	double getResult() const noexcept override;
+	Number(const double value) noexcept;
+	double calculate() const noexcept override;
+	std::string parseDefinition() const noexcept override;
 
 private:
-	double result;
+	double value;
+	std::string definition;
 };
-
-using OperationMethod = double(*)(const NodePtr& left, const NodePtr& right);
 
 class Operation : public Node {
 public:
-	explicit Operation(const std::string& definition, const int priority,
-			const OperationMethod& method) noexcept;
+	using Method = double(*)(const double left, const double right);
 	
-	std::string getDefinition() const noexcept override;
-	double getResult() const noexcept override;
-	int getPriority() const noexcept;
-
-	void setLeftNode(const NodePtr& node) noexcept;
-	void setRightNode(const NodePtr& node) noexcept;
+	Operation(const std::string& definition,
+			const Method& method) noexcept;
+	double calculate() const noexcept override;
+	std::string parseDefinition() const noexcept override;
+	bool pushNode(const NodePtr& node) noexcept override;
 
 private:
-	int priority;
-	OperationMethod method;
-	NodePtr left = nullptr;
-	NodePtr right = nullptr;
+	std::string definition;
+	Method method;
+	NodePtr left, right;
+};
+
+class Brackets : public Node {
+public:
+	Brackets(const std::string& left,
+			const std::string& right, const NodePtr& root) noexcept;
+	double calculate() const noexcept override;
+	std::string parseDefinition() const noexcept override;
+
+private:
+	std::string left, right;
+	NodePtr root;
 };
