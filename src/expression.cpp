@@ -4,10 +4,10 @@
 using namespace std;
 
 std::ostream& operator<<(std::ostream& os, const Expression& expression) {
-	return os << expression.getDefinition();
+	return os << expression.parseDefinition();
 }
 
-Expression::Expression(const std::string& expression, const Parser& parser) noexcept
+Expression::Expression(const std::string& expression, Parser parser) noexcept
 	: root(parser.parse(expression)) { }
 
 Expression::Expression(const char* expression) noexcept
@@ -17,16 +17,16 @@ bool Expression::isValid() const noexcept {
 	return root != nullptr;
 }
 
-std::string Expression::getDefinition() const noexcept {
+std::string Expression::parseDefinition() const noexcept {
 	if (!isValid()) {
 		return "error parsing";
 	}
-	return root->getDefinition();
+	return root->parseDefinition();
 }
 
-double Expression::getResult() const noexcept {
+double Expression::calculate() const noexcept {
 	if (!isValid()) {
 		return numeric_limits<double>::quiet_NaN();
 	}
-	return root->getResult();
+	return root->calculate();
 }

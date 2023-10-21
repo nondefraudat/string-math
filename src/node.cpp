@@ -60,8 +60,9 @@ std::string Number::parseDefinition() const noexcept {
 }
 
 Operation::Operation(const std::string &definition,
-		const Method &method) noexcept
+		const Method &method, const Priority priority) noexcept
 		: definition(" " + definition + " "), method(method),
+		priority(priority),
 		left(nullptr), right(nullptr) { }
 
 double Operation::calculate() const noexcept {
@@ -95,6 +96,10 @@ bool Operation::pushNode(const NodePtr &node) noexcept {
 		return true;
 	}
     return false;
+}
+
+Node::Priority Operation::getPriority() const noexcept {
+    return priority;
 }
 
 Brackets::Brackets(const std::string &left, const std::string &right,
