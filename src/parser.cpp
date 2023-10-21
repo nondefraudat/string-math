@@ -56,7 +56,7 @@ bool Parser::isValidNumeric(const char symbol) noexcept {
 }
 
 bool Parser::isContains(std::string::const_iterator iterator, const std::string::const_iterator &terminator, const std::string &target) noexcept {
-	string::const_iterator targetIt;
+	string::const_iterator targetIt = target.cbegin();
 	const string::const_iterator& targetEnd = target.cend();
 	while (iterator != terminator && targetIt != targetEnd && *targetIt == *iterator) {
 		targetIt++;

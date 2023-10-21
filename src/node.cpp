@@ -104,7 +104,7 @@ Node::Priority Operation::getPriority() const noexcept {
 
 Brackets::Brackets(const std::string &left, const std::string &right,
 		const NodePtr& root) noexcept 
-		: left(" " + left), right(right + " "), root(root) { }
+		: left(left + " "), right(" " + right), root(root) { }
 
 double Brackets::calculate() const noexcept {
     if (!root) {
