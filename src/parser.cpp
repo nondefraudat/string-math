@@ -1,168 +1,199 @@
 #include "parser.hpp"
-#include <stack>
+#include <cmath>
 
 using namespace std;
-using NumberStack = stack<NumberPtr>;
-using OperationStack = stack<OperationPtr>;
 
 Parser::Parser() noexcept {
-	defineOperationTemplate("+", 1, StandartOperationTemplate(+));
-	defineOperationTemplate("-", 1, StandartOperationTemplate(-));
-	defineOperationTemplate("*", 2, StandartOperationTemplate(*));
-	defineOperationTemplate("/", 2, StandartOperationTemplate(/));
-	defineOperationTemplate("^", 3, FunctionOperationTemplate(pow));
+	registerDefaults();
 }
 
 NodePtr Parser::parse(const std::string& expression) noexcept {
+	RootPtr root = make_shared<Root>();
 	string::const_iterator iterator = expression.cbegin();
-	parseNext(iterator, expression.cend());
-	clearStacks();
+	string::const_iterator terminator = expression.cend();
+	while (iterator != terminator) {
+		const string::const_iterator last = iterator;
+		NodePtr node = parseNext(iterator, terminator);
+		if (node) {
+			root->pushNode(node);
+		}
+		if (iterator == last) {
+			break;
+		}
+	}
 	return root;
 }
 
-NumberPtr Parser::parseNumber(const std::string& definition) const noexcept {
-	int dotCounter = 0;
-	std::string buffer("");
-	for (const char symbol : definition) {
-		if (isInsignificant(symbol)) {
-			continue;
-		}
-		if (isDot(symbol) && dotCounter == 1) {
-			return nullptr;
-		}
-		if (!isDigit(symbol)) {
-			return nullptr;
-		}
-		buffer.push_back(symbol);
-	}
-	return make_shared<Number>(buffer);
+void Parser::registerOperation(const std::string& definition,
+		const Operation::Method& method,
+		const Node::Priority priority) noexcept {
+	operations[definition] = { method, priority };	
 }
 
-OperationPtr Parser::parseOperation(const std::string& definition) const noexcept {
-	if (!operationTemplates.contains(definition)) {
-		return nullptr;
-	}
-	int priority;
-	OperationMethod method;
-	tie(priority, method) = operationTemplates.at(definition);
-	return make_shared<Operation>(definition, priority, method);
+void Parser::registerBrackets(const std::string& left,
+		const std::string& right) noexcept {
+	brackets[left] = right;
 }
 
-void Parser::defineOperationTemplate(const std::string& definition, const int priority, const OperationMethod& method) noexcept {
-	operationTemplates[definition] = tuple<int, OperationMethod>(priority, method);
+bool Parser::isInsagnificant(const char symbol) noexcept {
+    return symbol == ' ' || symbol == '\t' || symbol == '\n';
 }
 
-bool Parser::isInsignificant(const char symbol) noexcept {
-	return symbol == ' ' || symbol == '\t' || symbol == '\n';
+bool Parser::isMinus(const char symbol) noexcept {
+    return symbol == '-';
 }
 
 bool Parser::isDigit(const char symbol) noexcept {
-	return symbol >= '0' && symbol <= '9';
+    return symbol >= '0' && symbol <= '9';
 }
 
 bool Parser::isDot(const char symbol) noexcept {
-	return symbol == '.';
+    return symbol == '.';
 }
 
 bool Parser::isValidNumeric(const char symbol) noexcept {
-	return isDigit(symbol) || isDot(symbol) || isInsignificant(symbol);
+    return isMinus(symbol) || isDot(symbol) || isDigit(symbol);
 }
 
-void Parser::parseNext(std::string::const_iterator& iterator, const std::string::const_iterator& terminator) noexcept {
-	skipInsegnificants(iterator, terminator);
-	if (iterator == terminator) {
-		return;
+bool Parser::isContains(std::string::const_iterator iterator, const std::string::const_iterator &terminator, const std::string &target) noexcept {
+	string::const_iterator targetIt = target.cbegin();
+	const string::const_iterator& targetEnd = target.cend();
+	while (iterator != terminator && targetIt != targetEnd && *targetIt == *iterator) {
+		targetIt++;
+		iterator++;
 	}
-	if (isValidNumeric(*iterator)) {
-		NumberPtr number = parseNumber(iterator, terminator);
-		if (!number) {
-			return;
-		}
-		numberStack.push(number);
+    return targetIt == targetEnd;
+}
+
+void Parser::registerDefaults() noexcept {
+	registerOperation("+", StandartMethod(+), Node::Priority::LOW);
+	registerOperation("-", StandartMethod(-), Node::Priority::LOW);
+	registerOperation("*", StandartMethod(*), Node::Priority::NORMAL);
+	registerOperation("/", StandartMethod(/), Node::Priority::NORMAL);
+	registerOperation("^", FunctionMethod(powf), Node::Priority::HIGH);
+	registerBrackets("(", ")");
+}
+
+NodePtr Parser::parseNext(std::string::const_iterator &iterator,
+		const std::string::const_iterator &terminator) noexcept {
+	skipInsagnificants(iterator, terminator);
+	NumberPtr number = parseNumber(iterator, terminator);
+	if (number) {
+		return number;
 	}
 	OperationPtr operation = parseOperation(iterator, terminator);
-	if (!operation) {
-		return;
+	if (operation) {
+		return operation;
 	}
-	if (operationStack.empty() ||
-			operation->getPriority() < operationStack.top()->getPriority()) {
-		operationStack.push(operation);
+	BracketsPtr brackets = parseBrackets(iterator, terminator);
+	if (brackets) {
+		return brackets;
 	}
-	else if (!root) {
-		if (numberStack.empty()) {
-			return;
-		}
-		operation->setLeftNode(numberStack.top());
-		numberStack.pop();
-		NumberPtr number = parseNumber(iterator, terminator);
-		if (!number) {
-			return;
-		}
-		operation->setRightNode(number);
-		root = operation;
-	}
-	else if (numberStack.empty()) {
-		return;
-	}
-	else {
-		operation->setLeftNode(numberStack.top());
-		operation->setRightNode(root);
-		root = operation;
-	}
-	parseNext(iterator, terminator);
+    return nullptr;
 }
 
-void Parser::skipInsegnificants(std::string::const_iterator& iterator, const std::string::const_iterator& terminator) noexcept {
-	while (iterator != terminator && isInsignificant(*iterator)) {
+void Parser::skipInsagnificants(std::string::const_iterator &iterator,
+		const std::string::const_iterator &terminator) noexcept {
+	while(iterator != terminator && isInsagnificant(*iterator)) {
 		iterator++;
 	}
 }
 
-NumberPtr Parser::parseNumber(std::string::const_iterator& iterator, const std::string::const_iterator& terminator) noexcept {
-	string buffer("");
-	while (iterator != terminator && isValidNumeric(*iterator)) {
-		buffer.push_back(*iterator);
-		iterator++;
+NumberPtr Parser::parseNumber(std::string::const_iterator &iterator,
+		const std::string::const_iterator &terminator) noexcept {
+	if (iterator == terminator || !isValidNumeric(*iterator)) {
+		return nullptr;
 	}
-	return parseNumber(buffer);
-}
-
-OperationPtr Parser::parseOperation(std::string::const_iterator& iterator, const std::string::const_iterator& terminator) noexcept {
-	string buffer("");
-	while (iterator != terminator) {
-		buffer.push_back(*iterator);
-		iterator++;
-		OperationPtr operation = parseOperation(buffer);
-		if (operation) {
-			return operation;
-		}
+	std::string buffer("");
+	if (isMinus(*iterator)) {
+		buffer.push_back(*iterator++);
 	}
-	return nullptr;
-}
-
-void Parser::clearStacks() noexcept {
-	while (!operationStack.empty()) {
-		OperationPtr operation = operationStack.top();
-		operationStack.pop();
-		if (numberStack.empty()) {
-			return;
-		}
-		operation->setLeftNode(numberStack.top());
-		numberStack.pop();
-		if (root) {
-			operation->setRightNode(root);
-			root = operation;
-		}
-		else if (numberStack.empty()) {
-			return;
+	if (iterator == terminator) {
+		return nullptr;
+	}
+	while (iterator != terminator &&
+			(isDigit(*iterator) || isInsagnificant(*iterator))) {
+		if (isInsagnificant(*iterator)) {
+			iterator++;
 		}
 		else {
-			operation->setRightNode(numberStack.top());
-			numberStack.pop();
+			buffer.push_back(*iterator++);
 		}
 	}
-	if (numberStack.size() == 1 && !root) {
-		root = numberStack.top();
-		numberStack.pop();
+	if (iterator == terminator) {
+		return make_shared<Number>(stod(buffer));
 	}
+    if (isDot(*iterator)) {
+		if (buffer.empty() || buffer == "-") {
+			buffer.push_back('0');
+		}
+		buffer.push_back(*iterator++);
+	}
+	while (iterator != terminator &&
+			(isDigit(*iterator) || isInsagnificant(*iterator))) {
+		if (isInsagnificant(*iterator)) {
+			iterator++;
+		}
+		else {
+			buffer.push_back(*iterator++);
+		}
+	}
+	return make_shared<Number>(stod(buffer));
+}
+
+OperationPtr Parser::parseOperation(std::string::const_iterator &iterator, 
+		const std::string::const_iterator &terminator) noexcept {
+	if (iterator == terminator) {
+		return nullptr;
+	}
+	string buffer("");
+	string::const_iterator temp = iterator;
+	while (temp != terminator) {
+		buffer.push_back(*temp++);
+		if (operations.contains(buffer)) {
+			iterator = temp;
+			Operation::Method method;
+			Node::Priority priority;
+			tie(method, priority) = operations.at(buffer);
+			return make_shared<Operation>(buffer, method, priority);
+		}
+	}
+    return nullptr;
+}
+
+BracketsPtr Parser::parseBrackets(std::string::const_iterator &iterator,
+		const std::string::const_iterator &terminator) noexcept {
+	if (iterator == terminator) {
+		return nullptr;
+	}
+	string buffer("");
+	string::const_iterator temp = iterator;
+	while (temp != terminator && !brackets.contains(buffer)) {
+		buffer.push_back(*temp++);
+	}
+	if (temp == terminator) {
+    	return nullptr;
+	}
+	iterator = temp;
+	size_t counter = 1;
+	const string& target = brackets.at(buffer);
+	string subexpression("");
+	while (iterator != terminator && counter) {
+		if (isContains(iterator, terminator, buffer)) {
+			counter++;
+			iterator += buffer.length();
+		}
+		else if(isContains(iterator, terminator, target)) {
+			counter--;
+			iterator += target.length();
+		}
+		else {
+			subexpression.push_back(*iterator++);
+		}
+	}
+	if (subexpression.empty()) {
+		return nullptr;
+	}
+	Parser subparser;
+	return make_shared<Brackets>(buffer, target, subparser.parse(subexpression));
 }

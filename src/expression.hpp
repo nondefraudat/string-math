@@ -14,8 +14,8 @@ public:
 
 	bool isValid() const noexcept;
 
-	std::string getDefinition() const noexcept;
-	double getResult() const noexcept;
+	std::string parseDefinition() const noexcept;
+	double calculate() const noexcept;
 
 private:
 	NodePtr root;

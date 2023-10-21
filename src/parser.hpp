@@ -1,42 +1,51 @@
 #pragma once
-
 #include "node.hpp"
 #include <map>
 #include <tuple>
-#include <stack>
 
-using OperationTemplates = std::map<std::string, std::tuple<int, OperationMethod>>;
+#define StandartMethod(action) [](const double l, const double r) -> double {\
+	return l action r;\
+}
+#define FunctionMethod(action) [](const double l, const double r) -> double {\
+	return action(l, r);\
+}
 
 class Parser {
 public:
 	Parser() noexcept;
-
 	NodePtr parse(const std::string& expression) noexcept;
-	NumberPtr parseNumber(const std::string& definition) const noexcept;
-	OperationPtr parseOperation(const std::string& definition) const noexcept;
 
-	void defineOperationTemplate(const std::string& definition,
-			const int priority, const OperationMethod& method) noexcept;
+	void registerOperation(const std::string& definition,
+			const Operation::Method& method,
+			const Node::Priority priority) noexcept;
+	void registerBrackets(const std::string& left, const std::string& right) noexcept;
 
 private:
-	static bool isInsignificant(const char symbol) noexcept;
+	static bool isInsagnificant(const char symbol) noexcept;
+	static bool isMinus(const char symbol) noexcept;
 	static bool isDigit(const char symbol) noexcept;
 	static bool isDot(const char symbol) noexcept;
 	static bool isValidNumeric(const char symbol) noexcept;
 
-	void parseNext(std::string::const_iterator& iterator,
-			const std::string::const_iterator& terminator)  noexcept;
-	void skipInsegnificants(std::string::const_iterator& iterator,
+	static bool isContains(std::string::const_iterator iterator,
+			const std::string::const_iterator& terminator,
+			const std::string& target) noexcept;
+	
+	std::map<std::string, std::tuple<Operation::Method, Node::Priority>> operations;
+	std::map<std::string, std::string> brackets;
+
+	void registerDefaults() noexcept;
+	
+	NodePtr parseNext(std::string::const_iterator& iterator,
 			const std::string::const_iterator& terminator) noexcept;
+
+	void skipInsagnificants(std::string::const_iterator& iterator,
+			const std::string::const_iterator& terminator) noexcept;
+
 	NumberPtr parseNumber(std::string::const_iterator& iterator,
 			const std::string::const_iterator& terminator) noexcept;
 	OperationPtr parseOperation(std::string::const_iterator& iterator,
 			const std::string::const_iterator& terminator) noexcept;
-
-	void clearStacks() noexcept;
-
-	OperationTemplates operationTemplates;
-	std::stack<OperationPtr> operationStack;
-	std::stack<NumberPtr> numberStack;
-	NodePtr root;
+	BracketsPtr parseBrackets(std::string::const_iterator& iterator,
+			const std::string::const_iterator& terminator) noexcept;
 };

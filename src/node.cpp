@@ -1,70 +1,121 @@
 #include "node.hpp"
-#include <format>
+#include <limits>
 
 using namespace std;
 
-Node::Node(const std::string& definition) noexcept
-		: definition(definition) { }
+const double Node::errorValue(numeric_limits<double>::quiet_NaN());
 
-std::string Node::getDefinition() const noexcept {
-	return definition;
+bool Node::pushNode(const NodePtr &node) noexcept {
+    return false;
 }
 
-Number::Number(const double result) noexcept
-		: Node(to_string(result)), result(result) { }
-
-Number::Number(const std::string& definition) noexcept
-		: Node(definition), result(stod(definition)) { }
-
-double Number::getResult() const noexcept {
-	return result;
+Node::Priority Node::getPriority() const noexcept {
+    return Priority::ABSOLUT;
 }
 
-Operation::Operation(const std::string& definition,
-		const int priority, const OperationMethod& method) noexcept
-		: Node(definition), priority(priority), method(method) { }
+Root::Root() noexcept : trunk(nullptr) { }
 
-std::string Operation::getDefinition() const noexcept {
+double Root::calculate() const noexcept {
+	if (!trunk) {
+		return errorValue;
+	}
+    return trunk->calculate();
+}
+
+std::string Root::parseDefinition() const noexcept {
+	if (!trunk) {
+		return "";
+	}
+    return trunk->parseDefinition();
+}
+
+bool Root::pushNode(const NodePtr &node) noexcept {
+    if (!trunk) {
+		trunk = node;
+		return true;
+	}
+	if (node->getPriority() >= trunk->getPriority()) {
+		return trunk->pushNode(node);
+	}
+	if (node->pushNode(trunk)) {
+		trunk = node;
+		return true;
+	}
+	return false;
+}
+
+Number::Number(const double value) noexcept
+		: value(value) {
+	definition = to_string(value);
+	definition.erase(definition.find_last_not_of('0') + 1, string::npos);
+	definition.erase(definition.find_last_not_of('.') + 1, string::npos);
+}
+
+double Number::calculate() const noexcept {
+    return value;
+}
+
+std::string Number::parseDefinition() const noexcept {
+    return definition;
+}
+
+Operation::Operation(const std::string &definition,
+		const Method &method, const Priority priority) noexcept
+		: definition(" " + definition + " "), method(method),
+		priority(priority),
+		left(nullptr), right(nullptr) { }
+
+double Operation::calculate() const noexcept {
 	if (!left || !right) {
+		return errorValue;
+	}
+    return method(left->calculate(), right->calculate());
+}
+
+std::string Operation::parseDefinition() const noexcept {
+    if (!left || !right) {
 		return "";
 	}
-	return format("{} {} {}", left->getDefinition(),
-			Node::getDefinition(), right->getDefinition());
+	return left->parseDefinition() + definition + right->parseDefinition();
 }
 
-double Operation::getResult() const noexcept {
-	return method(left, right);
+bool Operation::pushNode(const NodePtr &node) noexcept {
+	if (!left) {
+		left = node;
+		return true;
+	}
+	if (!right) {
+		right = node;
+		return true;
+	}
+	if (node->getPriority() >= right->getPriority()) {
+		return right->pushNode(node);
+	}
+	if (node->pushNode(right)) {
+		right = node;
+		return true;
+	}
+    return false;
 }
 
-int Operation::getPriority() const noexcept {
-	return priority;
+Node::Priority Operation::getPriority() const noexcept {
+    return priority;
 }
 
-void Operation::setLeftNode(const NodePtr& node) noexcept {
-	left = node;
+Brackets::Brackets(const std::string &left, const std::string &right,
+		const NodePtr& root) noexcept 
+		: left(left + " "), right(" " + right), root(root) { }
+
+double Brackets::calculate() const noexcept {
+    if (!root) {
+		return errorValue;
+	}
+	return root->calculate();
 }
 
-void Operation::setRightNode(const NodePtr& node) noexcept {
-	right = node;
-}
-
-Brackets::Brackets(const std::string& left, const std::string& right) noexcept
-		: Node(left + "{}" + right) { }
-
-std::string Brackets::getDefinition() const noexcept {
-	if (!child) {
+std::string Brackets::parseDefinition() const noexcept {
+	if (!root) {
 		return "";
 	}
-	return format(Node::getDefinition(), child->getDefinition());
-}
-
-double Brackets::getResult() const noexcept {
-	if (!child) {
-		return numeric_limits<double>::quiet_NaN();
-	}
-	return child->getResult();
-}
-
-void Brackets::setChildNode(const NodePtr& node) noexcept {
-
+    return left + root->parseDefinition() + right;
 }

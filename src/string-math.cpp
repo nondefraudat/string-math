@@ -2,5 +2,5 @@
 
 double calculate(const std::string& sourceExpression) noexcept {
 	Expression expression(sourceExpression);
-	return expression.getResult();
+	return expression.calculate();
 }
