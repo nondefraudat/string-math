@@ -70,7 +70,7 @@ void Parser::registerDefaults() noexcept {
 	registerOperation("-", StandartMethod(-), Node::Priority::LOW);
 	registerOperation("*", StandartMethod(*), Node::Priority::NORMAL);
 	registerOperation("/", StandartMethod(/), Node::Priority::NORMAL);
-	registerOperation("^", FunctionMethod(powf64), Node::Priority::HIGH);
+	registerOperation("^", FunctionMethod(powf), Node::Priority::HIGH);
 	registerBrackets("(", ")");
 }
 
