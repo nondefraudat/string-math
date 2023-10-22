@@ -9,19 +9,8 @@ Parser::Parser() noexcept {
 
 NodePtr Parser::parse(const std::string& expression) noexcept {
 	RootPtr root = make_shared<Root>();
-	string::const_iterator iterator = expression.cbegin();
-	string::const_iterator terminator = expression.cend();
-	while (iterator != terminator) {
-		const string::const_iterator last = iterator;
-		NodePtr node = parseNext(iterator, terminator);
-		if (node) {
-			root->pushNode(node);
-		}
-		if (iterator == last) {
-			break;
-		}
-	}
-	return root;
+	StringIterator source(expression);
+	return parseRecursive(source, root) ? root : nullptr;
 }
 
 void Parser::registerOperation(const std::string& definition,
@@ -74,84 +63,108 @@ void Parser::registerDefaults() noexcept {
 	registerBrackets("(", ")");
 }
 
-NodePtr Parser::parseNext(std::string::const_iterator &iterator,
-		const std::string::const_iterator &terminator) noexcept {
-	skipInsagnificants(iterator, terminator);
-	NumberPtr number = parseNumber(iterator, terminator);
-	if (number) {
-		return number;
-	}
-	OperationPtr operation = parseOperation(iterator, terminator);
-	if (operation) {
-		return operation;
-	}
-	BracketsPtr brackets = parseBrackets(iterator, terminator);
-	if (brackets) {
-		return brackets;
-	}
-    return nullptr;
+bool Parser::parseRecursive(StringIterator& source, RootPtr& root) noexcept {
+	skipInsagnificants(source);
+	return parseRecursiveBracketsNext(source, root) ||
+			parseRecursiveNumberNext(source, root);
 }
 
-void Parser::skipInsagnificants(std::string::const_iterator &iterator,
-		const std::string::const_iterator &terminator) noexcept {
-	while(iterator != terminator && isInsagnificant(*iterator)) {
-		iterator++;
+bool Parser::parseRecursiveBracketsNext(StringIterator &source, RootPtr &root) noexcept {
+	if (source.atEnd()) {
+		return false;
+	}
+	BracketsPtr brackets = parseBrackets(source);
+	if (!brackets) {
+		return false;
+	}
+	root->pushNode(brackets);
+	skipInsagnificants(source);
+    return source.atEnd() ? true : parseRecursiveOperationNext(source, root);
+}
+
+bool Parser::parseRecursiveNumberNext(StringIterator &source, RootPtr &root) noexcept {
+    if (source.atEnd()) {
+		return false;
+	}
+	NumberPtr number = parseNumber(source);
+	if (!number) {
+		return false;
+	}
+	root->pushNode(number);
+	skipInsagnificants(source);
+	return source.atEnd() ? true : parseRecursiveOperationNext(source, root);
+}
+
+bool Parser::parseRecursiveOperationNext(StringIterator &source, RootPtr &root) noexcept {
+	if (source.atEnd()) {
+		return false;
+	}
+	OperationPtr operation = parseOperation(source);
+	if (!operation) {
+		return false;
+	}
+	root->pushNode(operation);
+	skipInsagnificants(source);
+	return parseRecursiveBracketsNext(source, root) ||
+			parseRecursiveNumberNext(source, root);
+}
+
+void Parser::skipInsagnificants(StringIterator& source) noexcept {
+	while(!source.atEnd() && isInsagnificant(source.value())) {
+		source.next();
 	}
 }
 
-NumberPtr Parser::parseNumber(std::string::const_iterator &iterator,
-		const std::string::const_iterator &terminator) noexcept {
-	if (iterator == terminator || !isValidNumeric(*iterator)) {
+NumberPtr Parser::parseNumber(StringIterator& source) noexcept {
+	if (source.atEnd() || !isValidNumeric(source.value())) {
 		return nullptr;
 	}
+	StringIterator temp = source.createSubiterator();
 	std::string buffer("");
-	if (isMinus(*iterator)) {
-		buffer.push_back(*iterator++);
+	if (isMinus(temp.value())) {
+		buffer.push_back(temp.valueNext());
 	}
-	if (iterator == terminator) {
+	if (temp.atEnd()) {
 		return nullptr;
 	}
-	while (iterator != terminator &&
-			(isDigit(*iterator) || isInsagnificant(*iterator))) {
-		if (isInsagnificant(*iterator)) {
-			iterator++;
+	while (!temp.atEnd() &&
+			(isDigit(temp.value()) || isInsagnificant(temp.value()))) {
+		if (isDigit(temp.value())) {
+			buffer.push_back(temp.value());
 		}
-		else {
-			buffer.push_back(*iterator++);
-		}
+		temp.next();
 	}
-	if (iterator == terminator) {
+	if (temp.atEnd()) {
+		source.skipSubiterator(temp);
 		return make_shared<Number>(stod(buffer));
 	}
-    if (isDot(*iterator)) {
+    if (isDot(temp.value())) {
 		if (buffer.empty() || buffer == "-") {
 			buffer.push_back('0');
 		}
-		buffer.push_back(*iterator++);
+		buffer.push_back(temp.valueNext());
 	}
-	while (iterator != terminator &&
-			(isDigit(*iterator) || isInsagnificant(*iterator))) {
-		if (isInsagnificant(*iterator)) {
-			iterator++;
+	while (!temp.atEnd() &&
+			(isDigit(temp.value()) || isInsagnificant(temp.value()))) {
+		if (isDigit(temp.value())) {
+			buffer.push_back(temp.value());
 		}
-		else {
-			buffer.push_back(*iterator++);
-		}
+		temp.next();
 	}
+	source.skipSubiterator(temp);
 	return make_shared<Number>(stod(buffer));
 }
 
-OperationPtr Parser::parseOperation(std::string::const_iterator &iterator, 
-		const std::string::const_iterator &terminator) noexcept {
-	if (iterator == terminator) {
+OperationPtr Parser::parseOperation(StringIterator& source) noexcept {
+	if (source.atEnd()) {
 		return nullptr;
 	}
+	StringIterator temp = source.createSubiterator();
 	string buffer("");
-	string::const_iterator temp = iterator;
-	while (temp != terminator) {
-		buffer.push_back(*temp++);
+	while (!temp.atEnd()) {
+		buffer.push_back(temp.valueNext());
 		if (operations.contains(buffer)) {
-			iterator = temp;
+			source.skipSubiterator(temp);
 			Operation::Method method;
 			Node::Priority priority;
 			tie(method, priority) = operations.at(buffer);
@@ -161,39 +174,37 @@ OperationPtr Parser::parseOperation(std::string::const_iterator &iterator,
     return nullptr;
 }
 
-BracketsPtr Parser::parseBrackets(std::string::const_iterator &iterator,
-		const std::string::const_iterator &terminator) noexcept {
-	if (iterator == terminator) {
+BracketsPtr Parser::parseBrackets(StringIterator& source) noexcept {
+	if (source.atEnd()) {
 		return nullptr;
 	}
+	StringIterator temp = source.createSubiterator();
 	string buffer("");
-	string::const_iterator temp = iterator;
-	while (temp != terminator && !brackets.contains(buffer)) {
-		buffer.push_back(*temp++);
+	while (temp.atEnd() && !brackets.contains(buffer)) {
+		buffer.push_back(temp.valueNext());
 	}
-	if (temp == terminator) {
+	if (temp.atEnd()) {
     	return nullptr;
 	}
-	iterator = temp;
+	source.skipSubiterator(temp);
 	size_t counter = 1;
 	const string& target = brackets.at(buffer);
 	string subexpression("");
-	while (iterator != terminator && counter) {
-		if (isContains(iterator, terminator, buffer)) {
+	while (temp.atEnd() && counter) {
+		if (temp.skipDefinition(buffer)) {
 			counter++;
-			iterator += buffer.length();
 		}
-		else if(isContains(iterator, terminator, target)) {
+		else if(temp.skipDefinition(target)) {
 			counter--;
-			iterator += target.length();
 		}
 		else {
-			subexpression.push_back(*iterator++);
+			subexpression.push_back(temp.valueNext());
 		}
 	}
 	if (subexpression.empty()) {
 		return nullptr;
 	}
+	source.skipSubiterator(temp);
 	Parser subparser;
 	return make_shared<Brackets>(buffer, target, subparser.parse(subexpression));
 }
