@@ -8,8 +8,6 @@ include_directories("../src")
 add_executable(definition definition.cpp)
 add_executable(result result.cpp)
 
-enable_testing()
-
 set(CTEST_OUTPUT_ON_FAILURE ON)
 
 add_test(NAME DefinitionTests COMMAND definition)
