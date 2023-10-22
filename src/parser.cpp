@@ -180,7 +180,7 @@ BracketsPtr Parser::parseBrackets(StringIterator& source) noexcept {
 	}
 	StringIterator temp = source.createSubiterator();
 	string buffer("");
-	while (temp.atEnd() && !brackets.contains(buffer)) {
+	while (!temp.atEnd() && !brackets.contains(buffer)) {
 		buffer.push_back(temp.valueNext());
 	}
 	if (temp.atEnd()) {
@@ -190,7 +190,7 @@ BracketsPtr Parser::parseBrackets(StringIterator& source) noexcept {
 	size_t counter = 1;
 	const string& target = brackets.at(buffer);
 	string subexpression("");
-	while (temp.atEnd() && counter) {
+	while (!temp.atEnd() && counter) {
 		if (temp.skipDefinition(buffer)) {
 			counter++;
 		}
