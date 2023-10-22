@@ -5,10 +5,9 @@ project(Tests)
 link_libraries("string-math")
 include_directories("../src")
 
-add_executable(definition definition.cpp)
-add_executable(result result.cpp)
+file(GLOB PROJECT_SOURCES *.cpp *.hpp)
+add_executable(tests ${PROJECT_SOURCES})
 
 set(CTEST_OUTPUT_ON_FAILURE ON)
 
-add_test(NAME DefinitionTests COMMAND definition)
-add_test(NAME ResultTests COMMAND result)
+add_test(NAME Tests COMMAND tests)
